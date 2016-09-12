@@ -37,6 +37,7 @@ build.prop 代码中的详细含义见 http://blog.csdn.net/ouyang_peng/article/
 
 
 ## 用法
+### API
 客户端应用程序可以调用libcutils中的API函数以GET/SET属性信息。libcutils的源代码位于：device/libs/cutils。API函数是：
 ```c
 int property_get(const char *key, char *value, const char *default_value);
