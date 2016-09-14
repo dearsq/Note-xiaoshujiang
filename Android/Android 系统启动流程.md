@@ -67,7 +67,7 @@ u-boot 大致包括两个阶段，汇编代码（start.S） & C 代码。
 **静态加载** : 将驱动模块加载到内核中, 设备驱动会在内核启动的时候自动加载, 这种驱动是无法卸载的;
 **动态加载** : 在系统中使用 modprobe 或者 insmod 进行设备驱动模块的加载, 使用 rmmod 进行设备驱动模块卸载;
 #### 3.4 挂载文件系统
-**创建并挂载根设备** : kernel 初始化 和 设备初始化之后会创建 根设备, 根设备文件系统以只读方式挂载;
+**创建并挂载根设备** : kernel 初始化 和 设备初始化 之后会创建 根设备, 根设备文件系统以只读方式挂载;
 **释放内存到根设备** : 根设备创建成功之后, 根设备是只读的, 这时释放未使用的内存到 根设备上;
 #### 3.5 启动 init 程序
 启动应用程序 : 根文件挂载成功后, 启动 /sbin/init 程序, 这是 linux 系统第一个应用程序, 启动成功后 init 进程会获得 linux 系统的控制权;
@@ -75,9 +75,6 @@ u-boot 大致包括两个阶段，汇编代码（start.S） & C 代码。
 **挂载根文件** : 根据命令行参数挂载根文件系统;
 **跑启动脚本** : 执行用户自定义的 init 启动脚本;
 
-
-
-**××××××2016.9.13,20:40××××××××**
 ### 4. init 初始化系统服务
 （1）**init 初始化系统服务**
 **Linux 中 init 进程简介 :**
@@ -92,27 +89,49 @@ init 操作 : 系统初始化操作, 解析 init.rc 配置文件等操作;
 -- 解析配置 : 解析 init.rc 配置文件 和 /init.硬件平台名称.rc 配置文件, 执行 early-init, 解析 init 动作, eartly-boot 动作, boot 动作, Execute property 动作;
 -- 初始化2 : 设备初始化, 属性服务初始化, 开启属性服务; 
 -- 无限循环 : 进入无限循环状态, 等待属性设置 或 子进程退出事件;
+（3） init.rc 配置文件解析
+http://blog.csdn.net/dearsq/article/details/52100130
 
 
 ## 二、Android 上层启动流程
 ### 1. 上层系统启动简介
+1. init 进程启动
+2. Native Service（Android系统本地服务）
+3. Zygote 进程
+4. System Service（Android系统服务）
+5. HomeActivity
 ### 2. 启动 Native Service 本地服务
+由 init 启动，C/C++ 实现。启动项定义在 init.rc 中
+#### 作用
+Native Service 是 Android 内核 与 Android 通信 的通道，利用 socket 进行通信。
+**Console** : shell console 服务;
+**Service Manager** : Binder 服务管理器, 管理所有的 Android 系统服务;
+**Vold** : 支持外设热插拔服务;
+**Mountd** : 设备安装 状态通知服务;
+**Debuggerd** : 处理调试进程请求服务;
+**Rild** : 无线接口层服务;
+**Zygote** : 启动 Dalvik 并创建其它进程服务;
+**MediaServer** : 多媒体相关服务;
+
 ### 3. Zygote 进程启动
+Zygote 由 init 进程创建，init.rc 中配置了 Zygote 的创建参数。
+init.rc 中配置：Zygote 原始名称是“app_process”，启动中改名为 Zygote
+#### 作用
+本质 : Zygote 进程是一个虚拟的进程, 是虚拟实例(Dalvik虚拟机)的孵化器;
+操作 : Zygote 负责 Dalvik 虚拟机初始化, 预置类库加载等操作;
+应用启动处理 : 每个 Android 应用启动时, Zygote 会创建一个子进程(Dalvik虚拟机)执行它;
+节省内存策略 : Android 中有些系统库是只读的, 所有的 Dalvik 虚拟机都可以共享这些只读系统库;
 ### 4. Android SystemService 启动
+-- 启动 : Android System Service 是 Zygote 进程的第一个子进程, 由 Zygote 进程孵化而来;
+-- 作用 : System Service 是 Android 框架核心, 负责 Android 系统初始化 并 启动其它服务;
+-- 其它服务 : System Service 孵化的其它服务运行在对应 Dalvik 虚拟机进程的空间里;
+-- init.rc 配置 : 在 Zygote 配置中 "--start-system-server" 参数用来实现 System Service 的启动;
 ### 5. 启动 HomeActivity 主界面
-
-
-
-### （一）系统上电
-#### Android 系统执行的操作
-上电流程：CPU 上电 ——> PC 指向 ROM 启动代码零地址 ——> 执行将启动代码载入 RAM 后执行。
-CPU 上电：Android 系统的
-
-
-
-
-
+Launcher 应用程序 : 该应用程序就是 HomeActivity 所在的程序;
+-- 启动 : Launcher 由 Activity Manager Service 启动, 启动流程 System Service -> Activity Manager Service -> Launcher;
+-- 展示图标 : Launcher 启动后就会将已经安装的 app 程序的快捷图标展示到桌面;
 
 
 ## 参考文献
 [1][Android系统启动流程 -- bootloader](http://blog.csdn.net/lizhiguo0532/article/details/7017503)
+[2][ 【Android 系统开发】 Android 系统启动流程简介](http://blog.csdn.net/shulianghan/article/details/39125439)
