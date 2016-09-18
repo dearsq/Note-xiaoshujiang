@@ -103,7 +103,8 @@ init 操作 : 系统初始化操作, 解析 init.rc 配置文件等操作;
 iparse_config_file 来读取脚本，然后生成服务列表和动作列表
 服务列表（service）和动作列表（on）会注册到 service_list 和 action_list 中，其为 init 进程中声明的全局结构体
 device_init 来生成静态设备节点
-
+之后，全局属性值的生成在init进程中propertyinit函数中进行初始化，在共享内存区域，创建并初始化属性值，对于全局属性的修改，只有init进程可以修改，当要修改的时候，需要预先向其提交申请，然后init进程通过之后，才会去修改属性值，提交申请的过程会创建一个socket用来接收提交的申请。执行到这系统将Android系统的Logo显示在桌面上。这个时候设置事件处理循环的监视事件，注册在POLL中的文件描述符会在poll函数中等待事件，事件发生，则从poll函数中跳出并处理事件。各种文件描述符都会前来注册。
+https://segmentfault.com/a/1190000004676352
 
 （3） init.rc 配置文件解析
 http://blog.csdn.net/dearsq/article/details/52100130
