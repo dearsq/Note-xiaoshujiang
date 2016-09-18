@@ -5,6 +5,9 @@ grammar_cjkRuby: true
 ---
 [TOC]
 
+## 概览
+
+
 ## 一、Android 底层启动流程
 ### 1. 系统上电并执行 ROM 引导代码
 #### 1.1 由 PC 引出 Android 
@@ -79,7 +82,10 @@ u-boot 大致包括两个阶段，汇编代码（start.S） & C 代码。
 （1）**init 初始化系统服务**
 **Linux 中 init 进程简介 :**
 -- 系统父进程 : init 进程是 Linux 系统所有进程的 父进程, id 为 1;
--- init 进程作用 : 初始化 和 启动 系统, 创建其它进程 如 shell login 等进程;
+-- init 进程作用 : 
+1. 初始化 和 启动 系统, 创建其它进程 如 shell login 等进程;
+2. 子进程的终止处理;
+3. 提供属性服务，保存系统运行所需要的环境变量。
 **Android 中 init 进程简介 :** 
 -- 系统父进程 : init 在 Android 中也是第一个进程, id 为 1;
 -- 创建其它进程 : 创建 zygote 进程, 该进程可以提供 属性服务 用于管理系统属性;
@@ -89,6 +95,16 @@ init 操作 : 系统初始化操作, 解析 init.rc 配置文件等操作;
 -- 解析配置 : 解析 init.rc 配置文件 和 /init.硬件平台名称.rc 配置文件, 执行 early-init, 解析 init 动作, eartly-boot 动作, boot 动作, Execute property 动作;
 -- 初始化2 : 设备初始化, 属性服务初始化, 开启属性服务; 
 -- 无限循环 : 进入无限循环状态, 等待属性设置 或 子进程退出事件;
+
+注册消息处理器
+创建并且挂载所需要的文件目录（socket 文件，虚拟内存文件）
+创建设备节点文件、输出 log 文件，将错误信息重定向到这里
+解析 init.rc 脚本（init.rc 用于通用环境变量和进程相关的定义）
+iparse_config_file 来读取脚本，然后生成服务列表和动作列表
+服务列表（service）和动作列表（on）会注册到 service_list 和 action_list 中，其为 init 进程中声明的全局结构体
+device_init 来生成静态设备节点
+
+
 （3） init.rc 配置文件解析
 http://blog.csdn.net/dearsq/article/details/52100130
 
@@ -130,6 +146,9 @@ init.rc 中配置：Zygote 原始名称是“app_process”，启动中改名为
 Launcher 应用程序 : 该应用程序就是 HomeActivity 所在的程序;
 -- 启动 : Launcher 由 Activity Manager Service 启动, 启动流程 System Service -> Activity Manager Service -> Launcher;
 -- 展示图标 : Launcher 启动后就会将已经安装的 app 程序的快捷图标展示到桌面;
+
+## 三、代码实现
+
 
 
 ## 参考文献
