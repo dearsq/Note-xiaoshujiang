@@ -5,7 +5,8 @@ grammar_cjkRuby: true
 ---
 [TOC]
 
-我们发现 /etc/passwd 内容如下
+
+今天发现 /etc/passwd 内容如下
 ```
 ＃cat/etc/passwd
 root:x:0:0:Superuser:/:
@@ -13,7 +14,7 @@ daemon:x:1:1:Systemdaemons:/etc:
 bin:x:2:2:Ownerofsystemcommands:/bin:
 sys:x:3:3:Ownerofsystemfiles:/usr/sys:
 ```
-
+## passwd 格式
 /etc/passwd 中
 **一行记录**对应着一个用户。
 每行记录又被冒号(:)分隔为7个字段，其格式和具体含义如下：
