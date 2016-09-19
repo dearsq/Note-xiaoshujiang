@@ -1,6 +1,6 @@
 ---
 title: /etc/passwd 文件格式详解
-tags: 新建,模板,小书匠
+tags: Linux
 grammar_cjkRuby: true
 ---
 [TOC]
