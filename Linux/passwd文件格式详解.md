@@ -3,6 +3,8 @@ title: /etc/passwd 文件格式详解
 tags: 新建,模板,小书匠
 grammar_cjkRuby: true
 ---
+[TOC]
+
 我们发现 /etc/passwd 内容如下
 ```
 ＃cat/etc/passwd
