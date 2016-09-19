@@ -112,21 +112,14 @@ make 执行 makefile 中的命令来更新一个或者多个程序。如果没�
 同样如果这个编译结果不存在或者被修改，都将会被 make 重新编译。
 
 ## Makefile 执行过程
+Make 命令逐行执行了 makefile 中的命令。它一边执行着每条命令，一边向标准输出写命令（除非另有直接声明，比如用了 -s 选项）。一个 Makefile 必须使用 Tab 来进行缩进。
+当一个命令通过 make 命令来执行。它使用的是 make 的执行环境。这个环境包括了 1. 执行 make 命令的任何宏定义 2. 定义在 MAKEFLAGS 变量中的所有环境变量。
 
-The make command executes the commands in the makefile line by line. As make executes each command, it writes the command to standard output (unless otherwise directed, for example, using the -s flag). A makefile must have a Tab in front of the commands on each line.
-
-When a command is executed through the make command, it uses make's execution environment. This includes any macros from the command line to the make command and any environment variables specified in the MAKEFLAGS variable. The make command's environment variables overwrite any variables of the same name in the existing environment.
-
-Note:
-Quote:
 When the make command encounters a line beginning with the word include followed by another word that is the name of a makefile (for example, include depend), the make command attempts to open that file and process its contents as if the contents were displayed where the include line occurs. This behavior occurs only if the first noncomment line of the first makefile read by the make command is not the .POSIX target; otherwise, a syntax error occurs.
 Comments: Comments begin with a # character, anywhere but in a shell command line, and continue to the end of the line.
-
 Environment: The make command uses the MAKEFLAGS environment variable, if it exists.
 
 Target Rules
-
-
 Target rules have the following format:
 
 target[target...] : [prerequisite...] [;command]
@@ -207,10 +200,6 @@ $ m INIT_BOOTCHART=true
 At last, after makefiles optimize all the processes and build the device specific parts including binaries and libs and apps necessary for it to get booted, the 'system' folder and the 'boot.img' folder are prepared in the out/target/product/device. The META-INF folder is prepared at instance and the system and boot.img are packed into a zip file(whose name is also processed by the makefiles  ) and md5 sum prepared. The flashable zip gets prepared only if you run the "brunch" command or "lunch + mka" command. 
 
 The Build Tricks aren't *for fun*. This stuff is always gonna help you in the long run!
-
-
-
-
 
 
 
