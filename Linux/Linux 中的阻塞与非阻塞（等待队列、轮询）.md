@@ -55,6 +55,7 @@ wake_up_interruptible 只能唤醒处于 TASK_INTERRUPTIBLE 的进程。
 sleep_on(wait_queue_head_t *q);
 interruptible_sleep_on(wait_queue_head_t *q);
 ```
+## 轮询
 
 ## 实例
 ```
