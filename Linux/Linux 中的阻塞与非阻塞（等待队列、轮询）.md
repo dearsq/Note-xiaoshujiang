@@ -51,13 +51,60 @@ void wake_up_interruptible(wait_queue_head_t *queue);
 wake_up 可以唤醒处于 TASK_INTERRUPTIBLE 和 TASK_UNINTERRUPTIBLE 的进程。
 wake_up_interruptible 只能唤醒处于 TASK_INTERRUPTIBLE 的进程。
 ### 7.在等待队列上睡眠
-```
+```-
 sleep_on(wait_queue_head_t *q);
 interruptible_sleep_on(wait_queue_head_t *q);
 ```
 ## 轮询
+### select()+poll() 或 epoll
+```
+/*
+	readfds、writefds、 exceptfds 是监视的 读、写、异常处理的文件描述符集合
+    numfs 是需要检查的号码的最高值+1
+    readfds 如果有任何文件变得可读  或者  writefds 如果有任何文件变得可写，select() 就会返回
+*/
+int select(int numfs, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+```
+```
+FD_ZERO(fd_set *set)  //清除
+FD_SET(int fd, fd_set *set) //添加
+FD_CLR(int fd, fd_set *set) //删除
+FD_ISSET(int fd,fd_set *set) //判断是否被置为
+```
+```
+int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+```
+但是我们一般用 epoll()
+```
+//1.  创建 epoll 句柄（返回文件描述符 epfd），size 是内核要监听的 fd 的个数
+int epoll_create(int size);
+//2.  监听事件类型
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+/* op:
+ EPOLL_CTL_ADD 添加
+ EPOLL_CTL_MOD 修改
+ EPOLL_CTL_DEL  删除
+   event:
+ EPOLLIN 可读
+ EPOLLOUT 可写
+ EPOLLPRI 紧急可读（有 socket 带外数据到来）
+ EPOLLERR fd 发生错误
+ EPOLLHUP fd 被挂断
+ EPOLLET 设置为边缘触发（高速模式：如果 fd 从未就绪变为就绪，内核通过 epoll 告诉用户，一次就绪通知）
+ EPOLLONESHOT 一次性监听（监听完后不再监听）
+*/
+//3. 等待事件发生
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+events 输入
+maxevents 表示个数 < epoll_create 创建时的 size
+timeout 超时时间 0 立即 -1 永久
+```
+
+### 设备驱动中的 poll() 模板
+见实例
 
 ## 实例
+### 等待队列
 ```
 static ssize_t xxx_write(struct file *file, const char *buffer, size_t count, loff_t *ppos)
 {
@@ -93,13 +140,51 @@ out:
 }
 ```
 
+### 轮询
+```
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
 
+#define FIFO_CLEAR 0x1
+#define BUFFER_LEN 20
+void main(void)
+{
+	int fd, num;
+	char rd_ch[BUFFER_LEN];
+	fd_set rfds, wfds;	/* 读/写文件描述符集 */
 
+	/* 以非阻塞方式打开/dev/globalfifo设备文件 */
+	fd = open("/dev/globalfifo", O_RDONLY | O_NONBLOCK);
+	if (fd != -1) {
+		/* FIFO清0 */
+		if (ioctl(fd, FIFO_CLEAR, 0) < 0)
+			printf("ioctl command failed\n");
 
+		while (1) {
+			FD_ZERO(&rfds);						//FD_ZERO 清除文件描述符合集
+			FD_ZERO(&wfds);
+			FD_SET(fd, &rfds);					//FD_SET 将 fd 加入合集中
+			FD_SET(fd, &wfds);
 
+			select(fd + 1, &rfds, &wfds, NULL, NULL);
+			/* 数据可获得 */
+			if (FD_ISSET(fd, &rfds))
+				printf("Poll monitor:can be read\n");
+			/* 数据可写入 */
+			if (FD_ISSET(fd, &wfds))
+				printf("Poll monitor:can be written\n");
+		}
+	} else {
+		printf("Device open failure\n");
+	}
+}
 
-
-
+```
 
 
 
