@@ -171,7 +171,7 @@ $ readelf -r myprintf.o
 Relocation section '.rel.text' at offset 0x334 contains 2 entries:
  Offset     Info    Type            Sym.Value  Sym. Name
 0000000a  00000501 R_386_32          00000000   .rodata
-0000000f  00000902 R_386_PC32        00000000   puts 
+0000000f  00000902 R_386_PC32        00000000   puts
 # R_386_32 和 R_386_PC32 是重定位类型，根据类型来进行重新定位
 ```
 
@@ -249,6 +249,7 @@ Hex dump of section '.strtab':
   0x00000010 696e7466 00707574 7300              intf.puts.
 ```
 
+
 ### 汇编语言文件中的节区表述
 ```
 $ gcc -S myprintf.c
@@ -276,9 +277,6 @@ myprintf:
 ```
 
 ## 链接
-
-
-
 
 
 
