@@ -171,7 +171,8 @@ $ readelf -r myprintf.o
 Relocation section '.rel.text' at offset 0x334 contains 2 entries:
  Offset     Info    Type            Sym.Value  Sym. Name
 0000000a  00000501 R_386_32          00000000   .rodata
-0000000f  00000902 R_386_PC32        00000000   puts
+0000000f  00000902 R_386_PC32        00000000   puts 
+# R_386_32 和 R_386_PC32 是重定位类型，根据类型来进行重新定位
 ```
 
 **.rodata 节区包含只读数据，即我们要打印的 hello,world! **
@@ -248,7 +249,35 @@ Hex dump of section '.strtab':
   0x00000010 696e7466 00707574 7300              intf.puts.
 ```
 
-##
+### 汇编语言文件中的节区表述
+```
+$ gcc -S myprintf.c
+$ cat myprintf.s
+        .file   "myprintf.c"
+        .section        .rodata
+.LC0:
+        .string "hello, world!"
+        .text
+.globl myprintf
+        .type   myprintf, @function
+myprintf:
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $8, %esp
+        subl    $12, %esp
+        pushl   $.LC0
+        call    puts
+        addl    $16, %esp
+        leave
+        ret
+        .size   myprintf, .-myprintf
+        .ident  "GCC: (GNU) 4.1.2"
+        .section        .note.GNU-stack,"",@progbits
+```
+
+## 链接
+
+
 
 
 
