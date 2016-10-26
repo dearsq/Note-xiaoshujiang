@@ -115,8 +115,143 @@ int main()
  
  ### ELF主体：节区（Section）
  ELF 文件中
- 文件头 组织整个文件总体结构
- 节区表和段表 描述可重定位文件和可执行文件
- 可重定位文件中
+ **文件头** 组织整个文件总体结构
+ **节区表** 描述可重定位文件
+ **程序头（段表）**描述可执行文件
+ 可重定位文件中 ，节区表描述的是其节区本身;
+ 可执行文件中，程序头描述的是由各个节区组成的段。
+
+```
+$ gcc -c myprintf.c
+$ readelf -S myprintf.o	//节区表
+
+There are 11 section headers, starting at offset 0xc0:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        00000000 000034 000018 00  AX  0   0  4
+  [ 2] .rel.text         REL             00000000 000334 000010 08      9   1  4
+  [ 3] .data             PROGBITS        00000000 00004c 000000 00  WA  0   0  4
+  [ 4] .bss              NOBITS          00000000 00004c 000000 00  WA  0   0  4
+  [ 5] .rodata           PROGBITS        00000000 00004c 00000e 00   A  0   0  1
+  [ 6] .comment          PROGBITS        00000000 00005a 000012 00      0   0  1
+  [ 7] .note.GNU-stack   PROGBITS        00000000 00006c 000000 00      0   0  1
+  [ 8] .shstrtab         STRTAB          00000000 00006c 000051 00      0   0  1
+  [ 9] .symtab           SYMTAB          00000000 000278 0000a0 10     10   8  4
+  [10] .strtab           STRTAB          00000000 000318 00001a 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+```
+
+**objdump -d 看反编译结果，-j 看指定节区**
+```
+$ objdump -d -j .text   myprintf.o
+myprintf.o:     file format elf32-i386
+
+Disassembly of section .text:
+
+00000000 <myprintf>:
+   0:   55                      push   %ebp
+   1:   89 e5                   mov    %esp,%ebp
+   3:   83 ec 08                sub    $0x8,%esp
+   6:   83 ec 0c                sub    $0xc,%esp
+   9:   68 00 00 00 00          push   $0x0
+   e:   e8 fc ff ff ff          call   f <myprintf+0xf>
+  13:   83 c4 10                add    $0x10,%esp
+  16:   c9                      leave
+  17:   c3                      ret
+```
+**用 -r 选项可以看到有关重定位的信息**
+```
+$ readelf -r myprintf.o
+
+Relocation section '.rel.text' at offset 0x334 contains 2 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name
+0000000a  00000501 R_386_32          00000000   .rodata
+0000000f  00000902 R_386_PC32        00000000   puts
+```
+
+**.rodata 节区包含只读数据，即我们要打印的 hello,world! **
+```
+$ readelf -x .rodata myprintf.o
+
+Hex dump of section '.rodata':
+  0x00000000 68656c6c 6f2c2077 6f726c64 2100     hello, world!.
+```
+**.data 节区无内容, 它应该包含一些初始化的数据**
+```
+$ readelf -x .data myprintf.o
+
+Section '.data' has no data to dump.
+```
+
+**.bss节区无内容，它应该包含未初始化的数据，默认初始为 0**
+```
+$ readelf -x .bss       myprintf.o
+
+Section '.bss' has no data to dump.
+```
+**.comment 是一些注释，可以看到是是 Gcc 的版本信息 **
+```
+$ readelf -x .comment myprintf.o
+
+Hex dump of section '.comment':
+  0x00000000 00474343 3a202847 4e552920 342e312e .GCC: (GNU) 4.1.
+  0x00000010 3200    
+```
+
+**.note.GNU-stack 这个节区也没有内容**
+```
+$ readelf -x .note.GNU-stack myprintf.o
+
+Section '.note.GNU-stack' has no data to dump.
+```
+
+**.shstrtab 包括所有节区的名字**
+```
+$ readelf -x .shstrtab myprintf.o
+
+Hex dump of section '.shstrtab':
+  0x00000000 002e7379 6d746162 002e7374 72746162 ..symtab..strtab
+  0x00000010 002e7368 73747274 6162002e 72656c2e ..shstrtab..rel.
+  0x00000020 74657874 002e6461 7461002e 62737300 text..data..bss.
+  0x00000030 2e726f64 61746100 2e636f6d 6d656e74 .rodata..comment
+  0x00000040 002e6e6f 74652e47 4e552d73 7461636b ..note.GNU-stack
+  0x00000050 00
+```
+**.symtab 包括所有用到的相关符号信息**
+```
+$ readelf -symtab myprintf.o
+
+Symbol table '.symtab' contains 10 entries:
+   Num:    Value  Size Type    Bind   Vis      Ndx Name
+     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND
+     1: 00000000     0 FILE    LOCAL  DEFAULT  ABS myprintf.c
+     2: 00000000     0 SECTION LOCAL  DEFAULT    1
+     3: 00000000     0 SECTION LOCAL  DEFAULT    3
+     4: 00000000     0 SECTION LOCAL  DEFAULT    4
+     5: 00000000     0 SECTION LOCAL  DEFAULT    5
+     6: 00000000     0 SECTION LOCAL  DEFAULT    7
+     7: 00000000     0 SECTION LOCAL  DEFAULT    6
+     8: 00000000    24 FUNC    GLOBAL DEFAULT    1 myprintf
+     9: 00000000     0 NOTYPE  GLOBAL DEFAULT  UND puts
+```
+**字符串表 .strtab 包含用到的字符串，包括文件名、函数名、变量名等**
+```
+$ readelf -x .strtab myprintf.o
+
+Hex dump of section '.strtab':
+  0x00000000 006d7970 72696e74 662e6300 6d797072 .myprintf.c.mypr
+  0x00000010 696e7466 00707574 7300              intf.puts.
+```
+
+##
+
+
+
+
 
 
