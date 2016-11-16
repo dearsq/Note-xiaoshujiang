@@ -3,6 +3,12 @@ title: [RK3399]OTA差异包制作方法
 tags: RockChip,OTA
 grammar_cjkRuby: true
 ---
+Platform: RK3399
+OS: Android 6.0
+Version: v2016.08
+
+[TOC]
+
 #### 一、全编
 ```
 make -j32
