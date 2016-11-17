@@ -82,31 +82,103 @@ enable-gpios
 kernel/drivers/video/backlight/pwm_bl.c 
 ```
 pwm_backlight_probe 
-    pwm_backlight_parse_dt 	//解析 dts 中的 brightness-levels、default-brightness-level
-    //RK3288 还会在这里解析 enable-gpios ，但是 3399 没有，3399 是在 probe 里面用 devm_gpiod_get_optional 来解析的
-    devm_gpiod_get_optional //实际上就是封装了 gpio_request_one
-    devm_gpio_request_one 		//申请背光使能 gpio
-    devm_pwm_get ->     core.c//获得一个pwm
+    pwm_backlight_parse_dt 	  //解析 dts 中的 brightness-levels、default-brightness-level
+    //RK3288 还会在这里解析 enable-gpios ，但是 3399 没有，3399 是在 probe 里面用 devm_gpiod_get_optional      //获取 enable-gpio 状态的
+    devm_gpiod_get_optional  //实际上就是封装了 gpio_request_one
+    devm_gpio_request_one 	//申请背光使能 gpio
+    devm_pwm_get ->     /drivers/pwm/core.c //获得一个pwm
         pwm_get ->
             of_pwm_get ->
                 of_parse_phandle_with_args    解析上面dts中的pwms属性.
                 of_node_to_pwmchip
                 pwm = pc->of_xlate    //最终生成struct pwm_device类型.    
     pwm_request    //申请pwm,防止其他驱动也会使用.
+	pwm_set_period    //pb->pwm->period = data->pwm_period_ns
     pwm_get_period    //获取period.
     dev_set_name(&pdev->dev, "rk28_bl");    //name不能改,用户空间会被用到:/sys/class/backlight/rk28_bl
-    backlight_device_register    -> //注册标准背光设备
+    backlight_device_register    -> /drivers/video/baklight/backlight.c   //注册标准背光设备
         device_register
         backlight_register_fb ->
-            fb_register_client    //callback是fb_notifier_callback.
+            fb_register_client    //callback 是 fb_notifier_callback 
+			fb_register_client   // 注册内核通知链
     backlight_update_status ->        //用默认值更新.
         bd->ops->update_status ->
             pwm_backlight_update_status ->
-                compute_duty_cycle    //计算占空比,下面会分析.
+                compute_duty_cycle    //计算占空比
                 pwm_config    //配置pwm 
                 pwm_backlight_power_on    //enable背光
-    platform_set_drvdata
+    platform_set_drvdata //可以将 pdev 保存成平台总线设备的私有数据，以后再要使用它时只需调用 platform_get_drvdata
 ```
+计算占空比：
+compute_duty_cycle:
+```
+static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
+{
+    /*一般情况下这个值都为0*/
+    unsigned int lth = pb->lth_brightness;
+	/*占空比*/
+    int duty_cycle;
+    /*pb->levels这个表格就是从dts节点brightness-levels中获取的,
+    假设进来的参数brightness是254,那么得到的duty_cycle就是1,
+    如果没有这个表格,那么就直接是进来的亮度值.*/
+    if (pb->levels)
+        duty_cycle = pb->levels[brightness];
+    else
+        duty_cycle = brightness;
+		
+    /*假设这里lth是0,那么公式就是duty_cycle * pb->period / pb->scale
+	pb->period也就是dts节点 pwms 的第三个参数周期值为 25000
+    pb->scale为pb->levels数组中的最大值
+	所以这个公式就是按照将Android的纯数值转换成事件周期值对应的占空比.*/
+    return (duty_cycle * (pb->period - lth) / pb->scale) + lth;
+}
+```
+KrisFei 的小结:
+其实不管用哪种方式都是调用backlight_update_status来改变背光,syfs也是,看下backlight.c
+backlight_class_init ->    backlight.c
+    class_create    //创建class,名字是backlight.
+    backlight_class->dev_attrs = bl_device_attributes;
+```
+static struct device_attribute bl_device_attributes[] = {  
+    __ATTR(bl_power, 0644, backlight_show_power, backlight_store_power),  
+    __ATTR(brightness, 0644, backlight_show_brightness,  
+             backlight_store_brightness),  
+    __ATTR(actual_brightness, 0444, backlight_show_actual_brightness,  
+             NULL),  
+    __ATTR(max_brightness, 0444, backlight_show_max_brightness, NULL),  
+    __ATTR(type, 0444, backlight_show_type, NULL),  
+    __ATTR_NULL,  
+};  
+```
+其中backlight_store_brightness() 最终调用backlight_update_status().
+还有一种情况是亮屏/灭屏时调用,记得前面有注册一个fb notify callback.
+```
+static int fb_notifier_callback(struct notifier_block *self,  
+                unsigned long event, void *data)  
+{  
+...  
+    /*只处理亮屏和灭屏事件.*/  
+    /* If we aren't interested in this event, skip it immediately ... */  
+    if (event != FB_EVENT_BLANK && event != FB_EVENT_CONBLANK)  
+        return 0;  
+...  
+    if (bd->ops)  
+        if (!bd->ops->check_fb ||  
+            bd->ops->check_fb(bd, evdata->info)) {  
+            bd->props.fb_blank = *(int *)evdata->data;  
+            //亮屏情况  
+            if (bd->props.fb_blank == FB_BLANK_UNBLANK)  
+                bd->props.state &= ~BL_CORE_FBBLANK;  
+            //灭屏时  
+            else  
+                bd->props.state |= BL_CORE_FBBLANK;  
+            backlight_update_status(bd);  
+        }  
+...  
+}
+```
+可以看到最后也是调用backlight_update_status()
+
 
 ## 问题集锦
 ### 占空比到 20% 就黑了，到 80% 就满了
@@ -120,3 +192,6 @@ brightness-levels = <
 			 59  60  60  61  62  62  63  63
 			 ... 198  199 199  200>
 
+
+参考文章：
+[1] KrisFei http://blog.csdn.net/kris_fei/article/details/52485635
