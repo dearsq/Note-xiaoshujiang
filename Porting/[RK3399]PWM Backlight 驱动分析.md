@@ -52,15 +52,17 @@ backlight: backlight {
 ```
 pwms = <&pwm0 0 25000 0>;
 ```
-第一个参数 表示此背光接在 pwm0 上;
+**第一个参数** 表示此背光接在 pwm0 上;
+
 ![](http://ww3.sinaimg.cn/large/ba061518gw1f9u1my0q8dj20hz00o74j.jpg)
+
 ![](http://ww1.sinaimg.cn/large/ba061518gw1f9u1nioy43j20m70bgwha.jpg)
 
-第二个参数 表示 index 为 0，pwm0 下只有 1个 pwm，所以填 0
+**第二个参数** 表示 index 为 0，pwm0 下只有 1个 pwm，所以填 0
 
-第三个参数 表示周期为 25000ns，即 频率 为 40k
+**第三个参数** 表示周期为 25000ns，即 频率 为 40k
 
-第四个参数 表示极性，0 正极性，1 负极性
+**第四个参数** 表示极性，0 正极性，1 负极性
 正极性 0 表示 背光为正极 0～255 ，占空比从 0～100% 变化
 负极性 1 表示 背光为负极 255～0 ，占空比从 100～0% 变化
 ```
@@ -80,8 +82,30 @@ enable-gpios
 kernel/drivers/video/backlight/pwm_bl.c 
 ```
 pwm_backlight_probe 
-{
-}
+    pwm_backlight_parse_dt 	//解析 dts 中的 brightness-levels、default-brightness-level
+    //RK3288 还会在这里解析 enable-gpios ，但是 3399 没有，3399 是在 probe 里面用 devm_gpiod_get_optional 来解析的
+    devm_gpiod_get_optional //实际上就是封装了 gpio_request_one
+    devm_gpio_request_one 		//申请背光使能 gpio
+    devm_pwm_get ->     core.c//获得一个pwm
+        pwm_get ->
+            of_pwm_get ->
+                of_parse_phandle_with_args    解析上面dts中的pwms属性.
+                of_node_to_pwmchip
+                pwm = pc->of_xlate    //最终生成struct pwm_device类型.    
+    pwm_request    //申请pwm,防止其他驱动也会使用.
+    pwm_get_period    //获取period.
+    dev_set_name(&pdev->dev, "rk28_bl");    //name不能改,用户空间会被用到:/sys/class/backlight/rk28_bl
+    backlight_device_register    -> //注册标准背光设备
+        device_register
+        backlight_register_fb ->
+            fb_register_client    //callback是fb_notifier_callback.
+    backlight_update_status ->        //用默认值更新.
+        bd->ops->update_status ->
+            pwm_backlight_update_status ->
+                compute_duty_cycle    //计算占空比,下面会分析.
+                pwm_config    //配置pwm 
+                pwm_backlight_power_on    //enable背光
+    platform_set_drvdata
 ```
 
 ## 问题集锦
