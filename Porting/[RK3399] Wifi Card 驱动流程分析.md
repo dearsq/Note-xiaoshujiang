@@ -7,10 +7,11 @@ grammar_cjkRuby: true
 Platform: RockChip 
 OS: Android 6.0 
 Kernel: 4.4
+WiFi/BT/FM 模组: AP6354 
 
 Linux 4.4 的 Wifi 驱动部分和 2.6 的区别还是比较大。
 前面的基本概念搜罗于网络;
-后面的驱动流程分析是根据 RockChip 的 Kernel 部分来进行分析的。
+后面的驱动流程分析是根据 RockChip 3399 的 Kernel 部分来进行分析的。
 
 其他内核为 Linux 4.4 的平台流程也大致相仿。
 
@@ -92,24 +93,62 @@ SDIO的每次操作都是由HOST在CMD线上发起一个CMD，对于有的CMD，
 **对于读命令**，首先HOST会向DEVICE发送命令，紧接着DEVICE会返回一个握手信号，此时，当HOST收到回应的握手信号后，会将数据放在4位的数据线上，在传送数据的同时会跟随着CRC校验码。当整个读传送完毕后，HOST会再次发送一个命令，通知DEVICE操作完毕，DEVICE同时会返回一个响应。
 **对于写命令**，首先HOST会向DEVICE发送命令，紧接着DEVICE会返回一个握手信号，此时，当HOST收到回应的握手信号后，会将数据放在4位的数据线上，在传送数据的同时会跟随着CRC校验码。当整个写传送完毕后，HOST会再次发送一个命令，通知DEVICE操作完毕，DEVICE同时会返回一个响应。
 
-## WIFI 注册流程
+## WIFI 模块解析和启动流程
+对于 Wifi 模组的 Android 上层的分析，这篇文章讲的非常不错：
+http://blog.csdn.net/ylyuanlu/article/details/7711433
+这篇文章将下图蓝色的和绿色的部分讲的非常详细。
 
+![](https://ws4.sinaimg.cn/large/ba061518gw1fa20uev7gaj20m70jmq64.jpg)
 
+我这个板子上所采用的 WiFi 模组是 AP6354, 它是一个 Wifi / BT4.0 / FM 三合一模组。接口是 SDIO。
+本文主要分析 Kernel Driver 部分。所以先从 SDIO 接口的驱动来切入。
 
 ## SDIO 接口驱动
+**SDIO 接口的 wifi，首先，它是一个 sdio 卡 设备，然后具备了 wifi 的功能，所以 SDIO 接口的 WiFi 驱动就是在 wifi 驱动 外面套上了一个 SDIO 驱动 的外壳。**
 
-SDIO接口的wifi，首先，它是一个sdio的卡的设备，然后具备了wifi的功能，所以SDIO接口的WiFi驱动就是在wifi驱动外面套上了一个SDIO驱动的外壳。
+SDIO 驱动部分代码结构如下
+
+![](https://ws3.sinaimg.cn/large/ba061518gw1fa21doio94j20fw079jsp.jpg)
+
+drivers/mmc 下有 mmc卡、sd卡、sdio 卡驱动。
+
 SDIO驱动仍然符合设备驱动的分层与分离思想。
 
-设备驱动层（wifi 设备）
+设备驱动层（wifi 设备）:
 				|
 核心层（向上向下提供接口）
-				|
+			|
 主机驱动层（实现 SDIO 驱动）
 
-### sdio_pwrseq
-dts
+我们主要关心 core 目录（CORE 层），其中是媒体卡的通用代码。包括 core.c host.c stdio.c。
+CORE 层完成了
+1. 不同协议和规范的实现
+2. 为 HOST 层的驱动提供了接口函数
+3. 完成了 SDIO 总线注册
+4. 对应 ops 操作
+5. 以及支持 mmc 的代码
 
+host 目录（HOST 层）是根据不通平台而编写的 host 驱动。
+
+## WIFI 驱动流程分析
+
+![](https://ws4.sinaimg.cn/large/ba061518gw1fa28l6s62xj20ar08xmyb.jpg)
+
+```c
+rockchip_wifi_init_module_rkwifi    //创建了一个内核线程 wifi_init_thread
+    wifi_init_thread
+        dhd_module_init
+            dhd_wifi_platform_register_drv    // 注册 wifi 驱动，注册成功调用后面的 probe
+			    bcmdhd_wifi_plat_dev_drv_probe
+				    dhd_wifi_platform_load    //两个操作
+					    wl_android_init    //1. wlan 初始化
+						dhd_wifi_platform_load_sdio    //2. 根据 接口类型 usb、sdio、pcie 选择不同的操作
+						    dhd_bus_register    //
+							    bcmsdh_register
+								    bcmsdh_register_client_driver
+```
+
+### sdio_pwrseq
 ```
 sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
