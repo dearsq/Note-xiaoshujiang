@@ -132,24 +132,35 @@ host 目录（HOST 层）是根据不通平台而编写的 host 驱动。
 
 ## WIFI 驱动流程分析
 
-![](https://ws4.sinaimg.cn/large/ba061518gw1fa28l6s62xj20ar08xmyb.jpg)
-
-```c
 rockchip_wifi_init_module_rkwifi    //创建了一个内核线程 wifi_init_thread
-    wifi_init_thread
-        dhd_module_init
-            dhd_wifi_platform_register_drv    // 注册 wifi 驱动，注册成功调用后面的 probe
-			    bcmdhd_wifi_plat_dev_drv_probe
+    wifi_init_thread    //->
+        dhd_module_init    
+            dhd_wifi_platform_register_drv    // 查找设备，注册 wifi 驱动，注册成功调用后面的 bcmdhd_wifi_plat_dev_drv_probe
+			    wifi_ctrlfunc_register_drv
+				|    bus_find_device    //查找 wifi 设备
+				|    platform_driver_register(&wifi_platform_dev_driver)    //注册 wifi 驱动
+			    bcmdhd_wifi_plat_dev_drv_probe    //->
 				    dhd_wifi_platform_load    //两个操作
 					    wl_android_init    //1. wlan 初始化
 						dhd_wifi_platform_load_sdio    //2. 根据 接口类型 usb、sdio、pcie 选择不同的操作
-						    dhd_bus_register    //
-							    bcmsdh_register
-								    bcmsdh_register_client_driver
-```
+						    dhd_bus_register    // 注册成功就调用 dhd_sdio.dhdsdio_probe
+								bcmsdh_register(&dhd_sdio)
+								|    bcmsdh_register_client_driver
+								|	    sdio_register_driver(&bcmsdh_sdmmc_driver)    //注册成功就调用 bcmsdh_sdmmc_driver.bcmsdh_sdmmc_probe
+								|		    bcmsdh_sdmmc_probe    //->
+								|			    sdioh_probe
+							    dhdsdio_probe
+
+
+参考文章
+[在全志平台调试博通的wifi驱动（类似ap6212）](http://blog.csdn.net/fenzhi1988/article/details/44809779)
+[wifi 详解(三)](http://blog.csdn.net/ylyuanlu/article/details/7711441#t2)
+
+## 调试问题
+
 
 ### sdio_pwrseq
-```
+```c
 sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
 		clocks = <&rk808 1>;
@@ -197,6 +208,8 @@ static struct mmc_pwrseq_ops mmc_pwrseq_simple_ops = {
 	.free = mmc_pwrseq_simple_free,
 };
 ```
+
+
 ### wireless-wlan
 kernel/net/rfkill/rfkill-wlan.c
 ```
@@ -310,27 +323,6 @@ int rockchip_wifi_power(int on)
 }
 }
 ```
-## WIFI 
-
-&pinctrl {
-	sdio-pwrseq {
-		wifi_enable_h: wifi-enable-h {
-			rockchip,pins =
-				<0 10 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-	};
-}
-
-
-	wireless-wlan {
-		compatible = "wlan-platdata";
-		rockchip,grf = <&grf>;
-		wifi_chip_type = "ap6354";
-		sdio_vref = <1800>;
-		WIFI,host_wake_irq = <&gpio0 3 GPIO_ACTIVE_HIGH>; /* GPIO0_a3 */
-		status = "okay";
-	};
-
 
 老规矩，在 linux 下 make menuconfig，我们用的是 AP6354，搜 ap6xxx， 发现有
 [IMG]
