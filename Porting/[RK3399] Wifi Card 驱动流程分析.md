@@ -1,5 +1,5 @@
 ---
-title: [RK3399] Wifi Card 驱动流程分析
+title: [RK3399] SDIO 接口 Wifi 驱动流程分析 (AP6354)
 tags: SDIO,Wifi
 grammar_cjkRuby: true
 ---
@@ -96,6 +96,7 @@ http://blog.csdn.net/ylyuanlu/article/details/7711433
 这篇文章将下图蓝色的和绿色的部分讲的非常详细。
 
 ![](https://ws4.sinaimg.cn/large/ba061518gw1fa20uev7gaj20m70jmq64.jpg)
+![android中wifi原理及流程分析](http://blog.csdn.net/pochuanpiao/article/details/7477652)
 
 我这个板子上所采用的 WiFi 模组是 AP6354, 它是一个 Wifi / BT4.0 / FM 三合一模组。接口是 SDIO。
 本文主要分析 Kernel Driver 部分。所以先从 SDIO 接口的驱动来切入。
