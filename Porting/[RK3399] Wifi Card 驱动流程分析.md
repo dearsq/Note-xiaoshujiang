@@ -9,11 +9,8 @@ OS: Android 6.0
 Kernel: 4.4
 WiFi/BT/FM 模组: AP6354 
 
-Linux 4.4 的 Wifi 驱动部分和 2.6 的区别还是比较大。
 前面的基本概念搜罗于网络;
 后面的驱动流程分析是根据 RockChip 3399 的 Kernel 部分来进行分析的。
-
-其他内核为 Linux 4.4 的平台流程也大致相仿。
 
 [TOC]
 
