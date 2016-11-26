@@ -10,6 +10,7 @@ Tools: OpenGL3
 [TOC]
 
 ## 代码
+tutorial02_red_triangle
 ```cpp
 // Include standard headers
 #include <stdio.h>
@@ -146,6 +147,37 @@ int main( void )
 
     return 0;
 }
+
+```
+fragmentshader
+```
+#version 330 core
+
+// Ouput data
+out vec3 color;
+
+void main()
+{
+
+	// Output color = red 
+	color = vec3(1,0,0);
+
+}
+```
+vertexshader
+```
+#version 330 core
+
+// Input vertex data, different for all executions of this shader.
+layout(location = 0) in vec3 vertexPosition_modelspace;
+
+void main(){
+
+    gl_Position.xyz = vertexPosition_modelspace;
+    gl_Position.w = 1.0;
+
+}
+
 
 ```
 
