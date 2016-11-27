@@ -36,6 +36,34 @@ LPM protocol in USB 2.0 and U0, U1, U2, and U3 states for USB 3.0
 ![](https://ws4.sinaimg.cn/large/ba061518gw1fa446ld799j20dl0brjsk.jpg)
 
 
+## 驱动代码
+先看一下 typec_phy 的结构体
+```
+struct rockchip_typec_phy {
+	struct device *dev;
+	void __iomem *base;
+	struct extcon_dev *extcon;
+	struct regmap *grf_regs;
+	struct clk *clk_core;
+	struct clk *clk_ref;
+	struct reset_control *uphy_rst;
+	struct reset_control *pipe_rst;
+	struct reset_control *tcphy_rst;
+	struct rockchip_usb3phy_port_cfg port_cfgs;
+	/* mutex to protect access to individual PHYs */
+	struct mutex lock;
+
+	bool flip;
+	u8 mode;
+};
+```
+
+rockchip_typec_phy_probe
+    typec_phy_pre_init(tcphy);
+
+
+
+
 
 ## 参考
 [USB - wikipedia](http://en.wikipedia.org/wiki/Host_controller_interface_(USB,_Firewire)#USB)
