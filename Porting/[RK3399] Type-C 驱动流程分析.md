@@ -59,11 +59,19 @@ struct rockchip_typec_phy {
 ```
 
 rockchip_typec_phy_probe
-    typec_phy_pre_init(tcphy);
-
-
-
-
+{
+    1. typec_phy_pre_init(tcphy); 
+		/* 在这个里面主要是做了
+			/* select external psm clock 选择额外的 psm clock*/
+			property_enable(tcphy, &cfg->external_psm, 1);
+			property_enable(tcphy, &cfg->usb3tousb2_en, 0);
+		*/
+	2. for_each_available_child_of_node(np, child_np) 	
+		用这个宏看是否有子节点，如果有就把数据放到子节点的私有数据中（dev_set_drvdata)
+	3. phy_provider = devm_of_phy_provider_register(dev, of_phy_simple_xlate);
+	实际上就是 	list_add_tail(&phy_provider->list, &phy_provider_list);
+将队列 phy_provider->list 放到 phy_provider_list 这个队列的尾部
+}
 
 ## 参考
 [USB - wikipedia](http://en.wikipedia.org/wiki/Host_controller_interface_(USB,_Firewire)#USB)
