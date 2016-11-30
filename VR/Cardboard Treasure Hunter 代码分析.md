@@ -148,7 +148,8 @@ new Thread(
         })
     .start();
 ```
-One can create, position, and play back sound objects at any time, using createSoundObject(). Any number of sound objects can be created from the same preloaded sound file. Note that if sounds have not previously been preloaded, the sound file will be streamed from disk on playback.
+可以使用createSoundObject（）在任何时间创建，定位和播放声音对象。从相同的预加载声音文件可以创建任意数量的声音对象。
+如果声音没有预先加载，声音文件将在播放时从磁盘流出。
 ```java
 // Start spatial audio playback of SOUND_FILE at the model postion. The returned
 // sourceId handle allows for repositioning the sound object whenever the cube
@@ -158,7 +159,7 @@ gvrAudioEngine.setSoundObjectPosition(
     sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
 gvrAudioEngine.playSound(sourceId, true /* looped playback */);
 ```
-The sourceId handle can be used to reposition the sound during run time.
+sourceId句柄可用于在运行时重新定位声音。
 ```java
 // Update the sound location to match it with the new cube position.
 if (sourceId != GvrAudioEngine.INVALID_ID) {
@@ -166,7 +167,8 @@ if (sourceId != GvrAudioEngine.INVALID_ID) {
       sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
 }
 ```
-In the onNewFrame method, we get a quaternion representing the latest position of the user's head, and pass that to setHeadRotation() to update the gvrAudioEngine.
+在onNewFrame方法中，我们得到一个表示用户头部最新位置的四元数，并将它传递给 setHeadRotation（）以更新 gvrAudioEngine
+
 ```java
 // Update the 3d audio engine with the most recent head rotation.
 headTransform.getQuaternion(headRotation, 0);
