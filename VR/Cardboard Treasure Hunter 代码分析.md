@@ -177,7 +177,6 @@ gvrAudioEngine.setHeadRotation(
 Calls to gvrAudioEngine.update() should be made once per frame.
 ```
 
-
 ### Handling inputs
 Cardboard  Viewers 包含使用了触摸模拟器的触发按钮（Trigger Button）。当您拉动触发器时，Viewwer 触摸您的手机屏幕。这些触发事件由Google VR SDK为您检测。
 
