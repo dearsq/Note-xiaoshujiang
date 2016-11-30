@@ -131,12 +131,14 @@ public void onDrawEye(Eye eye) {
 3. Google VR SDK 自动应用畸变算法，来渲染最终的场景。
 
 ### Rendering spatial audio
-The onCreate() method initializes the 3D audio engine. The second parameter in the constructor of GvrAudioEngine allows the user to specify a rendering mode defining the spatialization fidelity.
-
+onCreate（）方法初始化3D音频引擎。 GvrAudioEngine的构造函数中的第二个参数允许用户指定定义空间化保真度的渲染模式。
+```java
 gvrAudioEngine =
     new GvrAudioEngine(this, GvrAudioEngine.RenderingMode.BINAURAL_HIGH_QUALITY);
-To disable audio when the user pauses the app, and enable it again when they resume, call gvrAudioEngine.pause(); and gvrAudioEngine.resume(); in the onPause() and onResume() functions respectively. Sound files can be streamed during playback or preloaded into memory before playback. This preloading should be performed on a separate thread in order to avoid blocking of the main thread.
-
+```
+要在用户暂停应用程序时禁用音频，并在恢复时再次启用，请分别在onPause（）和onResume（）函数调用gvrAudioEngine.pause（）;和gvrAudioEngine.resume（）。
+声音文件可在播放期间流式传输或在播放前预先载入内存。此预加载应在单独的线程上执行，以避免主线程的阻塞。
+```java
 new Thread(
         new Runnable() {
           @Override
@@ -145,8 +147,9 @@ new Thread(
           }
         })
     .start();
+```
 One can create, position, and play back sound objects at any time, using createSoundObject(). Any number of sound objects can be created from the same preloaded sound file. Note that if sounds have not previously been preloaded, the sound file will be streamed from disk on playback.
-
+```java
 // Start spatial audio playback of SOUND_FILE at the model postion. The returned
 // sourceId handle allows for repositioning the sound object whenever the cube
 // position changes.
@@ -154,20 +157,24 @@ sourceId = gvrAudioEngine.createSoundObject(SOUND_FILE);
 gvrAudioEngine.setSoundObjectPosition(
     sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
 gvrAudioEngine.playSound(sourceId, true /* looped playback */);
+```
 The sourceId handle can be used to reposition the sound during run time.
-
+```java
 // Update the sound location to match it with the new cube position.
 if (sourceId != GvrAudioEngine.INVALID_ID) {
   gvrAudioEngine.setSoundObjectPosition(
       sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
 }
+```
 In the onNewFrame method, we get a quaternion representing the latest position of the user's head, and pass that to setHeadRotation() to update the gvrAudioEngine.
-
+```java
 // Update the 3d audio engine with the most recent head rotation.
 headTransform.getQuaternion(headRotation, 0);
 gvrAudioEngine.setHeadRotation(
     headRotation[0], headRotation[1], headRotation[2], headRotation[3]);
 Calls to gvrAudioEngine.update() should be made once per frame.
+```
+
 
 ### Handling inputs
 Cardboard  Viewers 包含使用了触摸模拟器的触发按钮（Trigger Button）。当您拉动触发器时，Viewwer 触摸您的手机屏幕。这些触发事件由Google VR SDK为您检测。
