@@ -5,15 +5,26 @@ grammar_cjkRuby: true
 ---
 Wiki：UNIX 世界，rc 经常被用作程序之启动脚本的文件名。它是“run commands”（运行命令）的缩写。
 我们以 init.rc 来入手，学习 rc 的用法。
-## 文件结构
-init.rc 基本单位是 section。
+## AIL 
+对于 init.rc 文件，Android 有特定的格式及规则。我们称之为初始化语言 AIL（Android Init Language）
+init.rc 基本单位是 section（区块）。
 section 有三种类型：
 1. on
 2. service
 3. import
 
+还有一种 options 的选项表示对 service 的描述。
+
 ### **on 类型**
-on 类型 表示一系列的命令组合，eg：
+on 类型 表示一系列的命令组合，
+语法：
+```AIL
+on <trigger>
+        <command>
+		<command>
+		...
+```
+eg：
 ```bash
 on init
     mkdir /productinfo 0771 system system
@@ -42,7 +53,14 @@ action_for_each_trigger("init",action_add_queue_tail);
 时，就将 on init 开始的这样一个 section 里所有的命令加入到一个执行队列，在未来某个时候会顺序执行队列里的命令。
 
 ### **service 类型**
-service 类型 的section 表示一个可执行的程序，eg：
+service 类型 的 section 表示一个可执行的程序，
+```AIL
+service <name> <pathname> [<argument>]*
+        <option>
+		<option>
+		...
+```
+e.g.：
 ```
 service poweroffalarm /system/bin/poweroff_alarm
     disabled
@@ -52,7 +70,7 @@ poweroffalarm 作为一个名字标识了这个 service，这个可执行程序�
 下面的 disable、oneshot 被称为 options，options 是用来描述的 service 的特点，不同的 service 有不同的 options。
 service 的执行时间是在 class_start 这个命令被执行的时候，这个命令总存在于某个 on 类型的section 中。
 比如 class_start core 被执行，则会启动所有类型为 core 的 service。
-eg：
+e.g.：
 ```
 service yo_service1 /system/bin/yo_service1
 	class core
