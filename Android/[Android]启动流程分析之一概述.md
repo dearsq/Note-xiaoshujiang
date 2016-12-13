@@ -1,5 +1,3 @@
-
-
 [TOC]
 
 ## 概述
@@ -24,7 +22,6 @@ init 进程先 fork() 来创建子进程：
 Zygote 孵化出 System Server 和 App
 它是 Android System 的核心进程，提供了应用程序声明周期管理，地理位置信息等各种 Service（这些 Service 同样需要注册到 Context Manager）。
 
-
 下面我们具体的一个个的来分析。
 
 ## BootROM
@@ -37,7 +34,7 @@ Bootloader 有很多，最常见的就是 uboot。
 1. 检测外部的 RAM 以及加载对第二阶段有用的程序。
 2. 引导程序设置网络、内存等等。这些对于运行内核是必要的，为了达到特殊的目标，引导程序可以根据配置参数或者输入数据设置内核。
 按代码来看分成两个部分：
-1. init.S 初始化堆栈，清零BBS段，调用main.c的_main()函数；
+1. init.S 初始化堆栈，清零BBS段，调用main.c的_main() 函数。
 2. main.c 初始化硬件（闹钟、主板、键盘、控制台），创建linux标签。
 
 ## Linux 内核
