@@ -24,7 +24,8 @@ service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-sys
 ### 启动 app_process 进程（Zygote）
 frameworks/base/cmds/app_process/app_main.cpp
 可以看到上面的传参有 –zygote, –start-system-server 
-根据 zygote 参数：
+
+**根据 zygote 参数：**
 1. 将 app_process 更名为 zygote
 2. 执行 AppRuntime 的 start() 方法（实际上为其父类 AndroidRuntime 的 start() 的方法）
 3. 利用 start() 方法启动 ZygoteInit 类的 main()
@@ -34,7 +35,7 @@ frameworks/base/cmds/app_process/app_main.cpp
     }else{...}
 ```
 
-根据 start-system-server 参数：
+**根据 start-system-server 参数：**
 ```
 if (startSystemServer) {
             args.add(String8("start-system-server"));
