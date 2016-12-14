@@ -34,7 +34,6 @@ frameworks/base/cmds/app_process/app_main.cpp
         runtime.start("com.android.internal.os.ZygoteInit", args, zygote);
     }else{...}
 ```
-
 **根据 start-system-server 参数：**
 ```
 if (startSystemServer) {
