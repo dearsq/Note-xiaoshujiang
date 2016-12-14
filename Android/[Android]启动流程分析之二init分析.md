@@ -53,6 +53,7 @@ void AndroidRuntime::start(const char* className, const Vector<String8>& options
 在 start() 里面
 1. 创建了 Java 虚拟机（startVm(&mJavaVM, &env, zygote)）
 2. 注册了 JNI 的函数（startReg(env)）
+3. 返回 ZygoteInit 的 main()
 
 注意参数中
 className 是 com.android.internal.os.ZygoteInit
