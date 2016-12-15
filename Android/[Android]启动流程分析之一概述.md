@@ -154,7 +154,7 @@ Android 通过在 Zygote 创建的时候加载资源，生成信息链接，再�
 参考 [Android系统启动-zygote篇](http://blog.csdn.net/omnispace/article/details/51773292)
 
 ## 六、SystemServer
-
+带更新
 
 ## 六、引导结束
 System Servers 在内存中跑起来后，发送开机广播 “ACTION_BOOT_COMPLETED”。
