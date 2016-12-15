@@ -156,7 +156,7 @@ Android 通过在 Zygote 创建的时候加载资源，生成信息链接，再�
 ## 六、SystemServer
 待更新
 
-## 六、引导结束
+## 七、引导结束
 System Servers 在内存中跑起来后，发送开机广播 “ACTION_BOOT_COMPLETED”。
 
 
