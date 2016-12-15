@@ -53,33 +53,38 @@ Bootloader 有很多，最常见的就是 uboot。
 
 
 ## 四、init 进程
-init 进程是用户态所有进程的祖先。
+init 进程是Linux系统中用户空间的第一个进程，进程号为1。
+它是用户态所有进程的祖先。
 ### 关键路径
 init 进程  	/system/core/init
 init.rc 脚本 	/system/core/rootdir/init.rc
 readme.txt	/system/core/init/readme.txt
 
-#### 作用
-1. 添加环境变量 //add_environment
-2. 挂载文件系统 //if (is_first_stage) { ...
-3. 设置属性并启动服务 //start_property_service()
-4. 运行 init.rc 脚本 //parser.ParseConfig("/init.rc");
+### 作用
+1. 分析和运行所有的init.rc文件; //parser.ParseConfig("/init.rc");
+2. 生成设备驱动节点; （通过rc文件创建）
+3. 处理子进程的终止(signal方式);
+4. 提供属性服务。 //start_property_service()
+5. 创建 Zygote 
+5.1 解析 init.zygote.rc //parse_service()
+5.2 启动 main 类型服务 //do_class_start()
+5.3 启动 zygote 服务 //service_start()
+5.4 创建 Zygote 进程 //fork()
+5.5 创建 Zygote Socket //create_socket()
 
-Action/Service		描述
-on early-init		设置init进程以及它创建的子进程的优先级，设置init进程的安全环境
-on init		设置全局环境，为cpu accounting创建cgroup(资源控制)挂载点
-on fs		挂载mtd分区
-on post-fs		改变系统目录的访问权限
-on post-fs-data		改变/data目录以及它的子目录的访问权限
-on boot		基本网络的初始化，内存管理等等
-service servicemanager		启动系统管理器管理所有的本地服务，比如位置、音频、Shared preference等等…
-service zygote		启动zygote作为应用进程
+init.rc 中启动的 Action 和 Service ：
+**on early-init**：设置init进程以及它创建的子进程的优先级，设置init进程的安全环境
+**on init**：设置全局环境，为cpu accounting创建cgroup(资源控制)挂载点
+**on fs**：挂载mtd分区
+**on post-fs**：改变系统目录的访问权限
+**on post-fs-data**：改变/data目录以及它的子目录的访问权限
+**on boot**：基本网络的初始化，内存管理等等
+**service servicemanager**：启动系统管理器管理所有的本地服务，比如位置、音频、Shared preference等等…
+**service zygote**：启动zygote作为应用进程
 
-至此 ANDROID 字样的 Logo 正常显示。
+![](https://ws4.sinaimg.cn/large/ba061518gw1fari9an4vmj20fq0cgabl.jpg)
 
-### 细节
-Android init 深入分析：http://blog.csdn.net/kc58236582/article/details/52247547#t0
-
+### 细节（可跳过）
 1. init 进程会先注册一些消息处理器；
 2. 然后是创建并挂载启动所需要的文件目录（socket文件，虚拟内存文件）；
 3. 在dev目录下创建设备节点文件，创建输出log的文件，同时将错误信息重定向到这里。
@@ -102,24 +107,49 @@ Android init 深入分析：http://blog.csdn.net/kc58236582/article/details/5224
 
 6. 这个时候设置事件处理循环的监视事件，注册在POLL中的文件描述符会在poll函数中等待事件，事件发生，则从poll函数中跳出并处理事件。各种文件描述符都会前来注册。
 
-
 参考： [Android 的 Init 进程](http://blog.csdn.net/xichangbao/article/details/53024698)
+参考：[Android系统启动-init篇](http://blog.csdn.net/omnispace/article/details/51773286)
 
 ## 五、Zygote 创建与启动应用
 ### Zygote 是什么
-在 Java 中，不同的虚拟机实例可以为不同的应用分配不同的内存。但如果Android系统为每一个应用启动不同的 Dalvik 虚拟机实例，就会消耗大量的内存以及时间。因此，为了克服这个问题，Android系统创造了”Zygote”。
-Zygote 让 Dalvik 虚拟机共享代码、低内存占用以及最小的启动时间成为可能。Zygote 是一个虚拟机进程，正如我们在前一个步骤所说的在系统引导的时候启动。Zygote 预加载以及初始化核心库类。通常，这些核心类一般是只读的，也是Android SDK或者核心框架的一部分。在Java虚拟机中，每一个实例都有它自己的核心库类文件和堆对象的拷贝。
+Zygote 顾名思义，是所有应用的祖先。因为 Zygote 是 Java 代码，所以需要装载到 AndroidRuntime VM （ART）上执行。
 
-### Zygote 创建
+在 Java 中，不同的虚拟机实例可以为不同的应用分配不同的内存。但如果Android系统为每一个应用启动不同的 VM 实例，就会消耗大量的内存以及时间。因此，为了克服这个问题，Android系统创造了”Zygote”。
 
-Zygote 顾名思义，是所有应用的祖先。因为 Zygote 是 Java 代码，所以需要装载到 Dalvik VM 上执行。
-1. 首先生成了一个 AppRuntime 对象，该类是继承自AndroidRuntime的，该类用来初始化并且运行Dalvik 虚拟机，为运行Android应用做好准备。接受main 函数传递进来的参数，然后初始化虚拟机。
-2. 虚拟机初始化之后，1）运行 ZygoteInit 类，代码在 /frameworks/base/core/java/com/android/internal/os/ZygoteInit.java。
+Zygote 让 VM 共享代码、低内存占用以及最小的启动时间成为可能。Zygote 是一个虚拟机进程，正如我们在前一个步骤所说的在系统引导的时候启动。Zygote 预加载以及初始化核心库类。通常，这些核心类一般是只读的，也是Android SDK或者核心框架的一部分。在Java虚拟机 中，每一个实例都有它自己的核心库类文件和堆对象的拷贝。
+
+### 关键代码
+```
+App_main.main
+    AndroidRuntime.start
+        startVm
+        startReg
+        ZygoteInit.main
+            registerZygoteSocket
+            preload
+            startSystemServer
+            runSelectLoop
+```
+### 流程分析
+Zygote是由init进程通过解析init.zygote.rc文件而创建的，zygote所对应的可执行程序app_process，所对应的源文件是App_main.cpp，进程名为zygote。
+
+1. 创建虚拟机 //App_main.cpp
+1）首先生成了一个 AppRuntime 对象，该类是继承自AndroidRuntime的，该类用来初始化并且运行 VM，为运行Android应用做好准备。//AndroidRuntime.start
+接受main 函数传递进来的参数，-Xzygote /system/bin --zygote --start-system-server 然后初始化虚拟机
+2）startVM。调用 JNI_CreateJavaVM 创建虚拟机。
+3）startReg。JNI 函数注册。
+
+2. 虚拟机初始化之后 //ZygoteInit.java 
+1）运行 ZygoteInit 类 main **注意代码已经变成 java 代码了**
 2）registerZygoteSocket()为zygote命令连接注册一个服务器套接字。
 3）preloadClassed “preloaded-classes”是一个简单的包含一系列需要预加载类的文本文件，你可以在< Android Source>/frameworks/base找到“preloaded-classes”文件。
 4）preloadResources() preloadResources也意味着本地主题、布局以及android.R文件中包含的所有东西都会用这个方法加载。
 //这个阶段可以看到开机动画
+
+3. Zygote 作用过程 
 现在程序的执行转向了虚拟机 Java 代码的执行，首先执行 main 函数，接下来就是 Zygote 的作用过程了。
+
+参考 [Android系统启动-zygote篇](http://blog.csdn.net/omnispace/article/details/51773292)
 
 ### 启动应用
 
