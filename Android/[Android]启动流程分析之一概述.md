@@ -9,38 +9,50 @@
 4. init 进程
 5. Zygote 启动
 
+展开一点来看
 
-板子上电后运行固化在 ROM 中的代码。
-引导进入 Bootloader。
-Bootloader 引导进入 Linux 内核。
-内核启动 init 进程。
-init 进程先 fork() 来创建子进程：
+1. 板子上电后运行固化在 ROM 中的代码，引导进入 Bootloader。
+2. Bootloader 启动，引导进入 Linux 内核。
+3. 内核通过 start_kernel() 启动 init 进程。
+4. init 进程先 fork() 来创建子进程：
 **首先 fork 出 Daemon 进程（守护进程）。** 包括 USB 守护进程、Debug 进程、无线通信连接守护进程;
 **然后 fork 出 Context Manager。** Android System 提供的所有 Service 都需要 Context Manager 注册，然后其他的进程才能够调用这个服务。
 **然后 fork 出 Media Server。** 这是 Native 服务，不是 Java 服务，所以不需要 VM。包括 Audio Flinger、Camera Service。
 **然后 fork 出 Zygote。** 和它的中文（受精卵）一样，它是所有 Android 应用程序的祖先。用它来孵化 Java 系统服务，同时孵化应用程序。
-Zygote 孵化出 System Server 和 App
+5. Zygote 孵化出 System Server 和 App。
 它是 Android System 的核心进程，提供了应用程序声明周期管理，地理位置信息等各种 Service（这些 Service 同样需要注册到 Context Manager）。
 
 下面我们具体的一个个的来分析。
 
-## BootROM
+## 一、BootROM
 按下电源后，引导芯片代码从预定义的地方（固化在 ROM）开始执行。
 加载引导程序到 RAM，然后执行引导程序（bootloader）。
 
-## Bootloader 引导程序
+## 二、Bootloader 引导程序
 Bootloader 有很多，最常见的就是 uboot。
+
 按所执行的功能分为两个阶段：
 1. 检测外部的 RAM 以及加载对第二阶段有用的程序。
 2. 引导程序设置网络、内存等等。这些对于运行内核是必要的，为了达到特殊的目标，引导程序可以根据配置参数或者输入数据设置内核。
+
 按代码来看分成两个部分：
 1. init.S 初始化堆栈，清零BSS段，调用main.c的_main() 函数。
-2. main.c 初始化硬件（闹钟、主板、键盘、控制台），创建linux标签。
+2. main.c 初始化硬件（闹钟、主板、键盘、控制台），创建 linux 标签。
 
-## Linux 内核
+## 三、Linux 内核
 内核启动时，设置缓存、被保护存储器、计划列表，加载驱动。当内核完成系统设置，它首先在系统文件中寻找”init”文件，然后启动 root 进程或者系统的第一个进程。
+![](https://ws4.sinaimg.cn/large/ba061518gw1farh6dq9odj20iv09zq4w.jpg)
 
-## init 进程
+> kernel 的入口点是 stext，这是一个汇编函数。
+从stext开始kernel将会完成一系列通过汇编语言实现芯片级的初始化工作，并以静态定义的方式创建kernel的第一个kernel进程init_task，即 0号进程。
+然后跳转到kernel的第一个c语言函数start_kernel完成后续十分繁杂的kernel初始化工作（setup_arch，mm_init，sched_init，init_IRQ以及最为关键的rest_init等几个函数）
+在rest_init中创建了kernel的第二个kernel进程 kernel_init（1号进程）和第二个kernel进程kthreadd（2号进程），对于驱动工程来说，需要关注下kernel_init调用的do_basic_setup函数，其完成了系统驱动初始化工作。
+最后kernel_init通过调用run_init_process("/init”)，开始执行init程序，并从kernel进程转化为第一个用户进程。
+
+参考：[Kernel 启动流程源码总结](http://blog.csdn.net/xichangbao/article/details/52971562)
+
+
+## 四、init 进程
 init 进程是用户态所有进程的祖先。
 ### 关键路径
 init 进程  	/system/core/init
@@ -48,10 +60,10 @@ init.rc 脚本 	/system/core/rootdir/init.rc
 readme.txt	/system/core/init/readme.txt
 
 #### 作用
-1. 添加环境变量，挂载各种文件系统。提供了属性服务。
-2. 运行 init.rc 脚本（AIL）。
-3. 应用程序访问设备驱动时，生成设备结点文件。
-4.  挂载目录，比如 /sys、/dev、/proc。
+1. 添加环境变量 //add_environment
+2. 挂载文件系统 //if (is_first_stage) { ...
+3. 设置属性并启动服务 //start_property_service()
+4. 运行 init.rc 脚本 //parser.ParseConfig("/init.rc");
 
 Action/Service		描述
 on early-init		设置init进程以及它创建的子进程的优先级，设置init进程的安全环境
@@ -91,19 +103,20 @@ Android init 深入分析：http://blog.csdn.net/kc58236582/article/details/5224
 6. 这个时候设置事件处理循环的监视事件，注册在POLL中的文件描述符会在poll函数中等待事件，事件发生，则从poll函数中跳出并处理事件。各种文件描述符都会前来注册。
 
 
-## Zygote 创建与启动应用
+参考： [Android 的 Init 进程](http://blog.csdn.net/xichangbao/article/details/53024698)
+
+## 五、Zygote 创建与启动应用
 ### Zygote 是什么
 在 Java 中，不同的虚拟机实例可以为不同的应用分配不同的内存。但如果Android系统为每一个应用启动不同的 Dalvik 虚拟机实例，就会消耗大量的内存以及时间。因此，为了克服这个问题，Android系统创造了”Zygote”。
 Zygote 让 Dalvik 虚拟机共享代码、低内存占用以及最小的启动时间成为可能。Zygote 是一个虚拟机进程，正如我们在前一个步骤所说的在系统引导的时候启动。Zygote 预加载以及初始化核心库类。通常，这些核心类一般是只读的，也是Android SDK或者核心框架的一部分。在Java虚拟机中，每一个实例都有它自己的核心库类文件和堆对象的拷贝。
 
 ### Zygote 创建
 
-
 Zygote 顾名思义，是所有应用的祖先。因为 Zygote 是 Java 代码，所以需要装载到 Dalvik VM 上执行。
 1. 首先生成了一个 AppRuntime 对象，该类是继承自AndroidRuntime的，该类用来初始化并且运行Dalvik 虚拟机，为运行Android应用做好准备。接受main 函数传递进来的参数，然后初始化虚拟机。
 2. 虚拟机初始化之后，1）运行 ZygoteInit 类，代码在 /frameworks/base/core/java/com/android/internal/os/ZygoteInit.java。
 2）registerZygoteSocket()为zygote命令连接注册一个服务器套接字。
-3）preloadClassed “preloaded-classes”是一个简单的包含一系列需要预加载类的文本文件，你可以在<Android Source>/frameworks/base找到“preloaded-classes”文件。
+3）preloadClassed “preloaded-classes”是一个简单的包含一系列需要预加载类的文本文件，你可以在< Android Source>/frameworks/base找到“preloaded-classes”文件。
 4）preloadResources() preloadResources也意味着本地主题、布局以及android.R文件中包含的所有东西都会用这个方法加载。
 //这个阶段可以看到开机动画
 现在程序的执行转向了虚拟机 Java 代码的执行，首先执行 main 函数，接下来就是 Zygote 的作用过程了。
@@ -119,7 +132,7 @@ Android 通过在 Zygote 创建的时候加载资源，生成信息链接，再�
 4. Zygote 在轮询监听 Socket，当有请求到达，读取请求，fork 子进程，加载进程需要的类，执行所要执行程序的 Main。代码转给了 Dalvik VM，App 也启动起来了。然后 Zygote 关闭套接字，删除请求描述
 符，防止重复启动。
 
-## 引导结束
+## 六、引导结束
 System Servers 在内存中跑起来后，发送开机广播 “ACTION_BOOT_COMPLETED”。
 
 
