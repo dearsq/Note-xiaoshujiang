@@ -131,36 +131,30 @@ App_main.main
             runSelectLoop
 ```
 ### 流程分析
+
 Zygote是由init进程通过解析init.zygote.rc文件而创建的，zygote所对应的可执行程序app_process，所对应的源文件是App_main.cpp，进程名为zygote。
 
-1. 创建虚拟机 //App_main.cpp
-1）首先生成了一个 AppRuntime 对象，该类是继承自AndroidRuntime的，该类用来初始化并且运行 VM，为运行Android应用做好准备。//AndroidRuntime.start
+![](https://ws4.sinaimg.cn/large/ba061518gw1farl8j6a0nj20hh0avtav.jpg)
+
+
+#### **创建虚拟机 //App_main.cpp**
+1. 首先生成了一个 AppRuntime 对象，该类是继承自AndroidRuntime的，该类用来初始化并且运行 VM，为运行Android应用做好准备。//AndroidRuntime.start
 接受main 函数传递进来的参数，-Xzygote /system/bin --zygote --start-system-server 然后初始化虚拟机
-2）startVM。调用 JNI_CreateJavaVM 创建虚拟机。
-3）startReg。JNI 函数注册。
+2. startVM。调用 JNI_CreateJavaVM 创建虚拟机。
+3. startReg。JNI 函数注册。
 
-2. 虚拟机初始化之后 //ZygoteInit.java 
-1）运行 ZygoteInit 类 main **注意代码已经变成 java 代码了**
-2）registerZygoteSocket()为zygote命令连接注册一个服务器套接字。
-3）preloadClassed “preloaded-classes”是一个简单的包含一系列需要预加载类的文本文件，你可以在< Android Source>/frameworks/base找到“preloaded-classes”文件。
-4）preloadResources() preloadResources也意味着本地主题、布局以及android.R文件中包含的所有东西都会用这个方法加载。
-//这个阶段可以看到开机动画
-
-3. Zygote 作用过程 
-现在程序的执行转向了虚拟机 Java 代码的执行，首先执行 main 函数，接下来就是 Zygote 的作用过程了。
-
-参考 [Android系统启动-zygote篇](http://blog.csdn.net/omnispace/article/details/51773292)
-
-### 启动应用
-
-
+#### **虚拟机初始化之后 //ZygoteInit.java** 
 ZygoteInit 代码流程：
 1. 绑定套接字。接受 Activity  Manager 来的应用启动请求。
 2. 加载 Android Framework 中的 class、res（drawable、xml信息、strings）到内存。
-Android 通过在 Zygote 创建的时候加载资源，生成信息链接，再有应用启动，fork 子进程和父进程共享信息，不需要重新加载，同时也共享虚拟机。
+Android 通过在 Zygote 创建的时候加载资源，生成信息链接，再有应用启动，fork 子进程和父进程共享信息，不需要重新加载，同时也共享 VM。
 3. 启动 System Server。因为我们的应用启动需要这些 server 的参与，所以需要先启动 System Server。接下来启动 ServerThread 来执行 Android Framework 服务，并通过 JNI 向 Context Manager 注册。
-4. Zygote 在轮询监听 Socket，当有请求到达，读取请求，fork 子进程，加载进程需要的类，执行所要执行程序的 Main。代码转给了 Dalvik VM，App 也启动起来了。然后 Zygote 关闭套接字，删除请求描述
-符，防止重复启动。
+4. Zygote 在轮询监听 Socket，当有请求到达，读取请求，fork 子进程，加载进程需要的类，执行所要执行程序的 Main。代码转给了 VM，App 也启动起来了。然后 Zygote 关闭套接字，删除请求描述符，防止重复启动。
+
+参考 [Android系统启动-zygote篇](http://blog.csdn.net/omnispace/article/details/51773292)
+
+## 六、SystemServer
+
 
 ## 六、引导结束
 System Servers 在内存中跑起来后，发送开机广播 “ACTION_BOOT_COMPLETED”。
