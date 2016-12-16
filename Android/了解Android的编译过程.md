@@ -126,84 +126,81 @@ Make 命令逐行执行了 makefile 中的命令。它一边执行着每条命�
 Target 规则的格式如下:
 
 target[target...] : [prerequisite...] [;command]
-<Tab>command
-多个 target 和 prerequisite 用空格分开。Any text that follows the ; (semicolon) and all of the subsequent lines that begin with a Tab character are considered commands to be used to update the target. A new target entry is started when a new line does not begin with a Tab or # character.
+< Tab>command
+多个 target 和 prerequisite 用空格分开。后面的任何文本 ; （分号）和所有被认为是后续行以标签字符开头的命令被用于更新目标。如果新行不以制表符或＃字符开始，后面就是一个新的 target。
+您也可以在Makefile教程看这里http://mrbook.org/tutorials/make/！
+这是构建过程中最重要的组成部分，其中 make 文件组织编译的每个源文件，并将他们组合成有用的应用程序/二进制文件/库等。
+where make files are resposible for compiling almost each of the files in the source and putting them together for the useful apps/binaries/libraries etc. 
 
-You can also look up at the Makefile Tutorial here http://mrbook.org/tutorials/make/ !
+## Build 技巧
+* 使用 Wiki。
+* 眼看用于构建实际的命令软件
+* 使用“showcommands”目标上的'制作'行：
 
-That was the most important part of the build process, where make files are resposible for compiling almost each of the files in the source and putting them together for the useful apps/binaries/libraries etc. 
+$make -j4 showcommands 
+这可以与其他一起使用make目标，以查看该版本的命令。即，'showcommands'不是目标本身，而只是为指定的生成的改性剂。
 
-Build Tricks
+在上面的例子中，-j4是无关的 showcommands选项，并且用于执行并行 4 线程。
 
-Used from wiki.
-
-Seeing the actual commands used to build the software
-Use the "showcommands" target on your 'make' line:
-
-$ make -j4 showcommands
-This can be used in conjunction with another make target, to see the commands for that build. That is, 'showcommands' is not a target itself, but just a modifier for the specified build.
-
-In the example above, the -j4 is unrelated to the showcommands option, and is used to execute 4 make sessions that run in parallel.
-
-Make targets
-Here is a list of different make targets you can use to build different parts of the system:
+make target
+下面是你可以用它来构建系统的不同部分不同 target 的列表：
 make sdk - build the tools that are part of an SDK (adb, fastboot, etc.)
 make snod - build the system image from the current software binaries
 make services
 make runtime
 make droid - make droid is the normal build.
 make all - make everything, whether it is included in the product definition or not
-make clean - remove all built files (prepare for a new build). Same as rm -rf out/<configuration>/
+make clean - remove all built files (prepare for a new build). Same as rm -rf out/< configuration>/
 make modules - shows a list of submodules that can be built (List of all LOCAL_MODULE definitions)
-make <local_module> - make a specific module (note that this is not the same as directory name. It is the LOCAL_MODULE definition in the Android.mk file)
-make clean-<local_module> - clean a specific module
+make < local_module> - make a specific module (note that this is not the same as directory name. It is the LOCAL_MODULE definition in the Android.mk file)
+make clean-< local_module> - clean a specific module
 
 Helper macros and functions
 There are some helper macros and functions that are installed when you source envsetup.sh. They are documented at the top of envesetup.sh, but here is information about a few of them:
 
-croot - change directory to the top of the tree
-Code:
+辅助宏和函数
+有一些辅助宏和函数，在安装时，你 source 了 envsetup.sh。它们在 envesetup.sh 顶部有文档，但这里是有关其中的几个信息：
+croot - 回到目录树的根部
 m - execute 'make' from the top of the tree (even if your current directory is somewhere else)
 mm - builds all of the modules in the current directory
-mmm <dir1> ... - build all of the modules in the supplied directories
-cgrep <pattern> - grep on all local C/C++ files
-jgrep <pattern> - grep on all local Java files
-resgrep <pattern> - grep on all local res/*.xml files
-godir <filename> - go to the directory containing a file
-Speeding up the build
+mmm < dir1> ... - build all of the modules in the supplied directories
+cgrep < pattern> - grep on all local C/C++ files
+jgrep < pattern> - grep on all local Java files
+resgrep < pattern> - grep on all local res/*.xml files
+godir < filename> - go to the directory containing a file
 
-You can use the '-j' option with make, to start multiple threads of make execution concurrently.
+## 加快 build
+### 你可以在 make 时使用'-j'选项，开启 make 使用多线程。
+根据我的经验，你的机器上有多个处理器的话你应该指定 2个或线程。如果你有2个处理器，使用' make -j4'，如果 超线程（这意味着你有4个虚拟处理器），尝试'使-j6。
+您还可以指定使用'ccache的“编译器缓存，这将加快的东西，一旦你已经建立的东西第一次。要做到这一点，在shell命令行中指定的出口USE_CCACHE = 1'。（注意：是的ccache包括在库的预建的部分，并没有单独的主机上安装。）
 
-In my experience, you should specify about 2 more threads than you have processors on your machine. If you have 2 processors, use 'make -j4', If they are hyperthreaded (meaning you have 4 virtual processors), try 'make -j6.
+### 编译单独的程序或模块
+如果您使用的 build/envsetup.sh，你可以使用一些定义功能去构建源码的一部分。使用“mm”或“mmm”命令来做到这一点。
 
-You can also specify to use the 'ccache' compiler cache, which will speed up things once you have built things a first time. To do this, specify 'export USE_CCACHE=1' at your shell command line. (Note that ccache is included in the prebuilt section of the repository, and does not have to be installed on your host separately.)
+“mm” 命令使东西在当前目录（和子目录）。
+“mmm”命令，指定要编译的目录或目录列表。
+'make snod' builds a new system image from current binaries. 在根目录运行 'make snod'。
 
-Building only an individual program or module
-If you use build/envsetup.sh, you can use some of the defined functions to build only a part of the tree. Use the 'mm' or 'mmm' commands to do this.
+### 设置模块特定的构建参数
+Android 系统中的某些代码可在它们的 build时进行定制（从构建变量独立和发布与调试选项）。您可以设置控制单个编译选项变量，无论是在环境中设置它们或直接通过他们“make”（或“m...”功能，这称之为“make”）。
+例如，“init”程序可以通过设置INIT_BOOTCHART变量 bootchart日志。（请参阅《 Using Bootchart on Android》了解为什么你可能想做到这一点。）
 
-The 'mm' command makes stuff in the current directory (and sub-directories, I believe). With the 'mmm' command, you specify a directory or list of directories, and it builds those.
-
-To install your changes, do 'make snod' from the top of tree. 'make snod' builds a new system image from current binaries.
-
-Setting module-specific build parameters
-Some code in Android system can be customized in the way they are built (separate from the build variant and release vs. debug options). You can set variables that control individual build options, either by setting them in the environment or by passing them directly to 'make' (or the 'm...' functions which call 'make'.)
-
-For example, the 'init' program can be built with support for bootchart logging by setting the INIT_BOOTCHART variable. (See Using Bootchart on Android for why you might want to do this.)
-
-You can accomplish either with:
-
+你可以做到：
+```
 $ touch system/init/init.c
 $ export INIT_BOOTCHART=true
 $ make
-or
-
+```
+或者
+```
 $ touch system/init/init.c
 $ m INIT_BOOTCHART=true
+```
+最后，经过 makefile 组织优化后，所有进程以及构建设备的指定部分（包括二进制文件、库、app、system 文件和 "boot.img" 都可以在 out/target/product/device 目录下找到）。在 META-INF文件的实例和系统boot.img被打包成一个zip文件（其名称也由makefile文件处理）并且MD5校验也准备好了。如果你运行“brunch”命令或“lunch+ mka”命令，将生成可擦写的 zip。
 
-At last, after makefiles optimize all the processes and build the device specific parts including binaries and libs and apps necessary for it to get booted, the 'system' folder and the 'boot.img' folder are prepared in the out/target/product/device. The META-INF folder is prepared at instance and the system and boot.img are packed into a zip file(whose name is also processed by the makefiles  ) and md5 sum prepared. The flashable zip gets prepared only if you run the "brunch" command or "lunch + mka" command. 
+Build 技巧不是并不是为了好玩。这东西可以帮助我们更深层次的看问题！
 
-The Build Tricks aren't *for fun*. This stuff is always gonna help you in the long run!
-
+- Younix 译
 
 
 
