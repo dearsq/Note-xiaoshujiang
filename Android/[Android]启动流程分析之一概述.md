@@ -91,7 +91,7 @@ init.rc 中启动的 Action 和 Service ：
 **service servicemanager**：启动系统管理器管理所有的本地服务，比如位置、音频、Shared preference等等…
 **service zygote**：启动zygote作为应用进程
 
-![](https://ws4.sinaimg.cn/large/ba061518gw1fari9an4vmj20fq0cgabl.jpg)
+![](https://ws2.sinaimg.cn/large/ba061518gw1fasilbde07j20h00cwmyz.jpg)
 
 参考：[Android 的 Init 进程](http://blog.csdn.net/xichangbao/article/details/53024698)
 参考：[Android系统启动-init篇](http://blog.csdn.net/omnispace/article/details/51773286)
@@ -122,8 +122,7 @@ App_main.main
 
 Zygote是由init进程通过解析init.zygote.rc文件而创建的，zygote所对应的可执行程序app_process，所对应的源文件是App_main.cpp，进程名为zygote。
 
-![](https://ws4.sinaimg.cn/large/ba061518gw1farl8j6a0nj20hh0avtav.jpg)
-
+![](https://ws4.sinaimg.cn/large/ba061518gw1fasilxuuilj20ie0aqgny.jpg)
 
 #### **创建虚拟机 //App_main.cpp**
 1. 首先生成了一个 AppRuntime 对象，该类是继承自AndroidRuntime的，该类用来初始化并且运行 VM，为运行Android应用做好准备。//AndroidRuntime.start
