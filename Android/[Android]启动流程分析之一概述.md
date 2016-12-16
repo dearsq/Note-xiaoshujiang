@@ -9,24 +9,30 @@
 4. init 进程
 5. Zygote 启动
 
+![gityuan 绘制的 Android 系统架构框图](https://ws4.sinaimg.cn/large/ba061518gw1fasfsv56ofj21ay16p43l.jpg)
+
 展开一点来看
 
-1. 板子上电后运行固化在 ROM 中的代码，引导进入 Bootloader。
+1. 板子上电后运行固化在 ROM 中的代码，加载 Bootloader 到 RAM。
 2. Bootloader 启动，引导进入 Linux 内核。
-3. 内核通过 start_kernel() 启动 init 进程。
-4. init 进程先 fork() 来创建子进程：
-**首先 fork 出 Daemon 进程（守护进程）。** 包括 USB 守护进程、Debug 进程、无线通信连接守护进程;
-**然后 fork 出 Context Manager。** Android System 提供的所有 Service 都需要 Context Manager 注册，然后其他的进程才能够调用这个服务。
-**然后 fork 出 Media Server。** 这是 Native 服务，不是 Java 服务，所以不需要 VM。包括 Audio Flinger、Camera Service。
-**然后 fork 出 Zygote。** 和它的中文（受精卵）一样，它是所有 Android 应用程序的祖先。用它来孵化 Java 系统服务，同时孵化应用程序。
+3. **Kernel 启动 swapper 进程**。即 idle 进程，pid = 0，系统初始化过程中的第一个进程，用于初始化 进程管理、内存管理、加载 Display、Camera Driver、Binder Driver 的工作。
+**Kernel 启动 init 进程**（用户进程的祖宗）。pid = 1，用来孵化用户空间的守护进程、HAL、开机动画等。
+**Kernel 启动 threadd 进程**（内核进程的祖宗）。pid = 2，创建内核工程线程 kworkder，软中断线程等。
+
+4. init 进程 fork 出 Daemon 进程：孵化出ueventd、logd、healthd、installd、adbd、lmkd 等用户守护进程；
+init 进程启动servicemanager(binder服务管家)、bootanim(开机动画)等重要服务;
+**init 进程孵化出Zygote进程**，Zygote进程是Android系统的第一个Java进程，Zygote是所有Java进程的父进程（Android 应用程序的祖宗），Zygote进程本身是由 init 进程孵化而来的。
+
 5. Zygote 孵化出 System Server 和 App。
-它是 Android System 的核心进程，提供了应用程序声明周期管理，地理位置信息等各种 Service（这些 Service 同样需要注册到 Context Manager）。
+它是 Android 系统的核心进程，提供了应用程序生命周期管理，地理位置信息等各种 Service（这些 Service 同样需要注册到 Context Manager）。
 
 下面我们具体的一个个的来分析。
 
 ## 一、BootROM
 按下电源后，引导芯片代码从预定义的地方（固化在 ROM）开始执行。
 加载引导程序到 RAM，然后执行引导程序（bootloader）。
+
+![](https://ws1.sinaimg.cn/large/ba061518gw1fasfuv2r3dj20oe0f3796.jpg)
 
 ## 二、Bootloader 引导程序
 Bootloader 有很多，最常见的就是 uboot。
@@ -41,6 +47,7 @@ Bootloader 有很多，最常见的就是 uboot。
 
 ## 三、Linux 内核
 内核启动时，设置缓存、被保护存储器、计划列表，加载驱动。当内核完成系统设置，它首先在系统文件中寻找”init”文件，然后启动 root 进程或者系统的第一个进程。
+
 ![](https://ws4.sinaimg.cn/large/ba061518gw1farh6dq9odj20iv09zq4w.jpg)
 
 > kernel 的入口点是 stext，这是一个汇编函数。
@@ -54,11 +61,13 @@ Bootloader 有很多，最常见的就是 uboot。
 
 ## 四、init 进程
 init 进程是Linux系统中用户空间的第一个进程，进程号为1。
-它是用户态所有进程的祖先。
+它是 用户进程 的祖先。
 ### 关键路径
 init 进程  	/system/core/init
 init.rc 脚本 	/system/core/rootdir/init.rc
 readme.txt	/system/core/init/readme.txt
+
+![](https://ws4.sinaimg.cn/large/ba061518gw1fashn2h1hlj20jn0cuaby.jpg)
 
 ### 作用
 1. 分析和运行所有的init.rc文件; //parser.ParseConfig("/init.rc");
@@ -84,41 +93,19 @@ init.rc 中启动的 Action 和 Service ：
 
 ![](https://ws4.sinaimg.cn/large/ba061518gw1fari9an4vmj20fq0cgabl.jpg)
 
-### 细节（可跳过）
-1. init 进程会先注册一些消息处理器；
-2. 然后是创建并挂载启动所需要的文件目录（socket文件，虚拟内存文件）；
-3. 在dev目录下创建设备节点文件，创建输出log的文件，同时将错误信息重定向到这里。
-
-> 何为设备节点文件：
-> Linux对于系统中的设备都会抽象成一个文件，内核为了高效的管理已经被打开的文件，通过一个文件描述符来表示，在Linux中Everything is file，通过这种方式，对于启动的时候，对于文件描述符，0代表标注输入，1表示标准输出，2是错误处理，然后设备文件，socket文件都会获得一个文件描述符来表述它。但是Linux会对其做相应的限制，同时可能会对一些进程进行限制，限制给进程分配多少个文件描述符。
-> 创建设备节点文件：
-> 应用程序通过驱动程序访问硬件设备，设备节点文件是设备驱动的逻辑文件，应用程序通过设备节点文件来访问设备驱动程序。
-> 设备节点的两种创建方式，一种，根据预先定义的设备信息，创建设备节点文件，第二种，在系统运行中，当设备插入时，init进程会接收这一事件，为插入设备动态创建设备节点文件。
->当设备插入的时候内核会加载相应的驱动程序，而后驱动程序会调用启动函数probe，将主，次设备号类型保存到/sys文件系统中。然后发出 uevent，并传递给守护进程，uevent，是内核向用户空间进程传递信息的信号系统，内核通过 uevent 将信息传递到用户空间，守护进程会根据 uevent 读取设备信息，创建设备节点文件。对于一些设备，采用冷插拔的方式，监听设备的uevent，然后调用其函数，创建设备节点文件。
-
-4. init进程生成输出设备之后，开始解析init.rc脚本文件，记录init进程执行的功能, init.rc用于通用的环境变量和进程相关的定义，通过函数 iparse_config_file 来读取其脚本。读取分析之后，生成服务列表和动作列表。
-
-> init.rc 的语言是 AIL（Android Init Language）。
-> init.rc文件大致上分为两个部分，一部分是以“on”关键字开头的动作列表，另一部分是以“service”关键字开头的服务服务列表。
-> 动作列表：主要设置环境变量，生成系统运行所需的文件或目录，修改相应的权限，并挂载和系统运行相关的目录。在挂载文件的时候，主要挂载/system和/data两个目录，两个目录挂载完毕，android根文件系统准备好了。根文件系统大致可分为shell使用程序，system目录（提供库和基础应用），data目录（保存用户应用和数据）,Android采用闪存设备，其采用了yaffs2文件系统，启动的时候要挂载到/system和/data目录下，然后是on boot段落，该部分设置应用程序终止条件，应用程序驱动目录和文件权限。为各应用制定 OOM，OOM用来监视内核分配给应用程序的内存，当内存不足的时候，应用程序会被终止执行。init.rc文件分析函数，它通过read_file函数，parse_config 函数，用来分析读入的字符串。
-> 服务列表：用来记录 init 进程启动的进程，由 init 进程启动的子进程或者是一次性程序，系统相关的 Daemon 进程。
-
-5. 服务列表和动作列表会注册到service_list和action_list中，其为在init进程中声明的全局结构体，调用device_init函数，生成静态设备结点文件，之后，全局属性值的生成在init进程中propertyinit函数中进行初始化，在共享内存区域，创建并初始化属性值，对于全局属性的修改，只有init进程可以修改，当要修改的时候，需要预先向其提交申请，然后init进程通过之后，才会去修改属性值，提交申请的过程会创建一个socket用来接收提交的申请。（执行到这系统将Android系统的Logo显示在LCD上）
-
-6. 这个时候设置事件处理循环的监视事件，注册在POLL中的文件描述符会在poll函数中等待事件，事件发生，则从poll函数中跳出并处理事件。各种文件描述符都会前来注册。
-
-参考： [Android 的 Init 进程](http://blog.csdn.net/xichangbao/article/details/53024698)
+参考：[Android 的 Init 进程](http://blog.csdn.net/xichangbao/article/details/53024698)
 参考：[Android系统启动-init篇](http://blog.csdn.net/omnispace/article/details/51773286)
 
 ## 五、Zygote 创建与启动应用
 ### Zygote 是什么
-Zygote 顾名思义，是所有应用的祖先。因为 Zygote 是 Java 代码，所以需要装载到 AndroidRuntime VM （ART）上执行。
+Zygote 顾名思义，是所有 Android 应用的祖先。
 
-在 Java 中，不同的虚拟机实例可以为不同的应用分配不同的内存。但如果Android系统为每一个应用启动不同的 VM 实例，就会消耗大量的内存以及时间。因此，为了克服这个问题，Android系统创造了”Zygote”。
+最开始，在 Java 中，不同的虚拟机实例可以为不同的应用分配不同的内存。但如果Android系统为每一个应用启动不同的 VM 实例，就会消耗大量的内存以及时间。因此，为了克服这个问题，Android系统创造了“Zygote”。
 
-Zygote 让 VM 共享代码、低内存占用以及最小的启动时间成为可能。Zygote 是一个虚拟机进程，正如我们在前一个步骤所说的在系统引导的时候启动。Zygote 预加载以及初始化核心库类。通常，这些核心类一般是只读的，也是Android SDK或者核心框架的一部分。在Java虚拟机 中，每一个实例都有它自己的核心库类文件和堆对象的拷贝。
+**Zygote 让 VM 共享代码、低内存占用以及最小的启动时间成为可能。** Zygote 是一个虚拟机进程，正如我们在前一个步骤所说的在系统引导的时候启动。Zygote 预加载以及初始化核心库类。通常，这些核心类一般是只读的，也是 Android SDK 或者核心框架的一部分。在Java虚拟机中，每一个实例都有它自己的核心库类文件和堆对象的拷贝。
 
-### 关键代码
+### 关键代码路径
+framework 层
 ```
 App_main.main
     AndroidRuntime.start
@@ -130,6 +117,7 @@ App_main.main
             startSystemServer
             runSelectLoop
 ```
+
 ### 流程分析
 
 Zygote是由init进程通过解析init.zygote.rc文件而创建的，zygote所对应的可执行程序app_process，所对应的源文件是App_main.cpp，进程名为zygote。
