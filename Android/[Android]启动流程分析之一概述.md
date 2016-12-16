@@ -48,7 +48,7 @@ Bootloader 有很多，最常见的就是 uboot。
 ## 三、Linux 内核
 内核启动时，设置缓存、被保护存储器、计划列表，加载驱动。当内核完成系统设置，它首先在系统文件中寻找”init”文件，然后启动 root 进程或者系统的第一个进程。
 
-![](https://ws4.sinaimg.cn/large/ba061518gw1farh6dq9odj20iv09zq4w.jpg)
+![](https://ws2.sinaimg.cn/large/ba061518gw1fasims09bzj20ja0aimyy.jpg)
 
 > kernel 的入口点是 stext，这是一个汇编函数。
 从stext开始kernel将会完成一系列通过汇编语言实现芯片级的初始化工作，并以静态定义的方式创建kernel的第一个kernel进程init_task，即 0号进程。
