@@ -113,18 +113,21 @@ make 执行 makefile 中的命令来更新一个或者多个程序。如果没�
 
 ## Makefile 执行过程
 Make 命令逐行执行了 makefile 中的命令。它一边执行着每条命令，一边向标准输出写命令（除非另有直接声明，比如用了 -s 选项）。一个 Makefile 必须使用 Tab 来进行缩进。
-当一个命令通过 make 命令来执行。它使用的是 make 的执行环境。这个环境包括了 1. 执行 make 命令的任何宏定义 2. 定义在 MAKEFLAGS 变量中的所有环境变量。
+当一个命令通过 make 命令来执行。它使用的是 make 的执行环境。这个环境包括了 
+1. 执行 make 命令的任何宏定义 
+2. 定义在 MAKEFLAGS 变量中的所有环境变量。
 
-When the make command encounters a line beginning with the word include followed by another word that is the name of a makefile (for example, include depend), the make command attempts to open that file and process its contents as if the contents were displayed where the include line occurs. This behavior occurs only if the first noncomment line of the first makefile read by the make command is not the .POSIX target; otherwise, a syntax error occurs.
-Comments: Comments begin with a # character, anywhere but in a shell command line, and continue to the end of the line.
-Environment: The make command uses the MAKEFLAGS environment variable, if it exists.
+> 注意：
+> 当 make 命令遇到以 makefile 里面的关键字相同的 起始的命令时（比如 inclue、depend），make 命令将试图打开这文件，并去处理该文件就好像这个文件本来就在 makefile 中的 include 行中一样。这个现象只在第一个 makefile 的第一个非命令行被 make 命令作为非 POSIX 目标读的时候才会发生。否则，将发生一个语法错误。
+> 注释：注释以 # 字符开始，除了 shell 命令行，其他的地方都可以用。
+> 环境：make 命令会使用 MAKEFLAGS 环境变量。
 
-Target Rules
-Target rules have the following format:
+## Target 规则
+Target 规则的格式如下:
 
 target[target...] : [prerequisite...] [;command]
 <Tab>command
-Multiple targets and prerequisites are separated by spaces. Any text that follows the ; (semicolon) and all of the subsequent lines that begin with a Tab character are considered commands to be used to update the target. A new target entry is started when a new line does not begin with a Tab or # character.
+多个 target 和 prerequisite 用空格分开。Any text that follows the ; (semicolon) and all of the subsequent lines that begin with a Tab character are considered commands to be used to update the target. A new target entry is started when a new line does not begin with a Tab or # character.
 
 You can also look up at the Makefile Tutorial here http://mrbook.org/tutorials/make/ !
 
