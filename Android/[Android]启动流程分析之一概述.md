@@ -142,7 +142,17 @@ Android 通过在 Zygote 创建的时候加载资源，生成信息链接，再�
 参考 [Android系统启动-zygote篇](http://blog.csdn.net/omnispace/article/details/51773292)
 
 ## 六、SystemServer
-待更新
+Zygote启动过程中会调用startSystemServer()，可知startSystemServer()函数是system_server启动流程的起点， 启动流程图如下：
+![](https://ws4.sinaimg.cn/large/ba061518gw1fashspfi0kj20vv095ab4.jpg)
+
+![](https://ws4.sinaimg.cn/large/ba061518gw1fasig0fsj0j20qs0m4ac5.jpg)
+system_server进程，从源码角度划分为引导服务、核心服务、其他服务3类。
+引导服务(7个)：ActivityManagerService、PowerManagerService、LightsService、DisplayManagerService、PackageManagerService、UserManagerService、SensorService；
+核心服务(3个)：BatteryService、UsageStatsService、WebViewUpdateService；
+其他服务(70个+)：AlarmManagerService、VibratorService等。
+
+
+参考：http://gityuan.com/2016/02/14/android-system-server/
 
 ## 七、引导结束
 System Servers 在内存中跑起来后，发送开机广播 “ACTION_BOOT_COMPLETED”。
