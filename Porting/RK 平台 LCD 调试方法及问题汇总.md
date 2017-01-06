@@ -279,12 +279,15 @@ timing 中的参数设置有误。优先确认。
 随机出现白屏有可能是静电问题，把LCD拿到头发上擦几下，如果很容易出现白屏那肯定就是静电问题了。另外一个在有Backend IC的情况下，也有可能bypass没处理好。
 ### 屏在进出睡眠或者显示过程中白屏
 sleep out（0x11）和 display on（0x29）之间需要 mdelay（120ms）左右。
+### 屏休眠唤醒后四周有白色痕迹
+检查下是不是屏的供电电源在休眠时没有关闭,导致屏上的电荷无法释放, 产生这种极化现象。
 ### 花屏
 **timing 中的参数设置有误。优先确认。**
 花屏 还有可能是总线速度有问题
 **开机就花屏**最简单的解决方式是，在 Init 结束的地方加一个刷黑屏的功能。也可以在睡眠函数里加延时函数。
 ### 屏幕抖动
-测时序，延时不足
+测时序，延时不足。
+适当地降低 clk，或者调节下 Vcom，确保屏供电电源波纹不大。
 ### 屏幕闪动
 通过调节电压来稳定，一般调节的电压为VRL、VRH、VDV和VCM
 ### 调节对比度
@@ -298,6 +301,58 @@ VRL、VRH、VDV和VCM，这些电压也可以用来调节亮暗（对比度）
 可能 VCOM 调节不正常
 进行 GAMMA 校正
 
+## EDP 屏调试问题汇总
+确保上电时序正确,先将 uboot-logo-on=0,打印 kernel log。
+### hw lt err
+检查下硬件连线,edp 屏的连接线
+上传输的高速的差分信号,所以对线的要求很高,要求线要包地,而且不能太长。
+如果硬件上的问题排查了,仍然有这样的错误,可以在 rk32_dp.c 文件中手动修改代码,得到想要的 lane 数和 lane speed:
+rk32_edp_probe 函数中可以修改这两个变量值:
+edp->video_info.link_rate= LINK_RATE_2_70GBPS;//LINK_RATE_1_62GBPS
+edp->video_info.lane_count = LANE_CNT4;//LANE_CNT2
+### max link rate:1.62Gps max number of lanes:4
+说明读取屏的 lane 数和 lane speed 正常,那么可以与屏的 datasheet 中对比下,看读取的结果是否是正确的,如果是正确的试着降低 dclk 的值。如果不正确可以在rk32_dp.c 文件中这样修改试下:
+```
+static int rk32_edp_init_training(struct rk32_edp *edp)
+{
+		int retval;
+		/*
+		* MACRO_RST must be applied after the PLL_LOCK to avoid
+		* the DP inter pair skew issue for at least 10 us
+		*/
+		rk32_edp_reset_macro(edp);
+		retval = rk32_edp_get_max_rx_bandwidth(edp,	&edp->link_train.link_rate);
+++    retval = rk32_edp_get_max_rx_lane_count(edp,	&edp->link_train.lane_count);
+		edp->link_train.link_rate = LINK_RATE_2_70GBPS;//LINK_RATE_1_62GBPS
+		edp->link_train.lane_count = LANE_CNT4;//LANE_CNT2
+		...
+}
+```
+### edp pll locked
+```bash
+[ 1.336855] rk32-edp rk32-edp: edp pll locked
+[ 1.337492] rk32-edp rk32-edp: max link rate:1.62Gps max number of lanes:4
+[ 1.343428] rk32-edp rk32-edp: hw lt err:6
+[ 1.343438] rk32-edp rk32-edp: link train failed!
+```
+屏的转接排线长了,后面改短了就可以了
+
+## RGB 屏调试问题汇总
+### 8 位 串口屏蓝色无法正常显示
+调节 out_face 为 out_s888dumy,红色和绿色可以显示,但颜色位置是颠倒的,后面看 TRM
+发现 RK 平台发送红绿蓝的格式为 BGR+DUMMY
+![](https://ws2.sinaimg.cn/large/ba061518gw1fbgptmu2iuj20ir01gmxe.jpg)
+屏接收的格式可能为 dummy+RGB,这样主控端发送的 B 就被认为是 dummy 舍弃了,然
+后只剩下 RG,B 接收的是 dummy 数据为空,后面将格式改为 dummy+rgb 后成功显示全
+部颜色
+### 3128 平台 rgb 屏插入 hdmi 后 RGB 屏显示异常
+插入 hdmi 后系统的时钟输出直接供给 HDMI 模块,显示 720p 的数据, RGB 屏的 clk 和数据通过一个 Scaler 模块,输出的 clk 值可能有所降低,可以调试屏的 clk 参数。
+### spi 接口屏需要发初始化命令，代码添加位置
+可以在 rk_disp_pwr_enable 这个函数结束处添加屏的初始化命令。如果有下电命令的话,要在 rk_disp_pwr_disable 开始处添加。
+### 初始化命令点亮屏，代码添加位置
+初始化命令添加的地方应该在 rk3288_lcdc_open 函数中的 clk 打开后添加。
+
+
 ## 感谢
 这段时间基本上把有些 Mipi 移植和 RK 平台 LCD 移植的文章看遍了。以下文章很有帮助。本文的问题集锦部分有一部分是将以下文章中的内容搜罗过来的：
 [android lcd調試 高通平台lcd調試深入分析總結（mipi和rgb接口）](http://fanli7.net/a/bianchengyuyan/C__/20130104/283658.html)
@@ -306,9 +361,3 @@ VRL、VRH、VDV和VCM，这些电压也可以用来调节亮暗（对比度）
 最后，得感谢这段时间师兄 Baker 和 Nick 的指点。
 还有网上两位 RK 刘哥和“llg”和“勇气” 的指点。
 收益颇丰。谢谢谢谢！
-另外 刘哥 llg 提出了一种方法：不起 android ，**直接写 framebuffer** 。这样对像素点的直接操作会比对图片的操作更加直观。
-暂时还不了解是什么意思，准备今晚下班了去了解一下。
-也顺便帮刘哥打个广告：刘哥的站点： http://www.laoliu-soft.net/ 
-
-
-
