@@ -11,7 +11,9 @@ Version: v2016.08
 
 ## 前言
 
-## 驱动框架
+
+## 流程分析
+
 ### module_usb_driver
 register/unregister  usbtouch_driver
 注册到总线接口的驱动是 usbtouch_driver
@@ -99,7 +101,8 @@ enum {
 	DEVTYPE_ETOUCH,
 };
 ```
-这里只是枚举类型，真正的 driver_info 是 probe 中的 usbtouch_device_info *type;
+这里只是枚举类型，真正的 driver_info 是 probe 中的 usbtouch_device_info \*type; 
+这个 usbtouch_device_info 我们放在后面来分析
 
 ### usbtouch_probe  
 ```c
@@ -280,8 +283,91 @@ out_free:
 	kfree(usbtouch);
 	return err;
 }
-
 ```
+###  usbtouch_device_info 
+ usbtouch_device_info 就是上面driver_info 以及usbtouch_probe 中抽取的驱动模块的info数组，不同的usbtouchscreen 注册的时候就是注册了一个枚举值，这个值就是usbtouch_dev_info 数组的第几元素.
+```c
+struct usbtouch_device_info {
+	int min_xc, max_xc;
+	int min_yc, max_yc;
+	int min_press, max_press;
+	int rept_size;
 
+	/*
+	 * Always service the USB devices irq not just when the input device is
+	 * open. This is useful when devices have a watchdog which prevents us
+	 * from periodically polling the device. Leave this unset unless your
+	 * touchscreen device requires it, as it does consume more of the USB
+	 * bandwidth.
+	 */
+	bool irq_always;
+    //这个函数指针用来接受 处理 中断
+	void (*process_pkt) (struct usbtouch_usb *usbtouch, unsigned char *pkt, int len);
 
-## 流程分析
+	/*
+	 * used to get the packet len. possible return values:
+	 * > 0: packet len
+	 * = 0: skip one byte
+	 * < 0: -return value more bytes needed
+	 */
+	int  (*get_pkt_len) (unsigned char *pkt, int len);
+
+	int  (*read_data)   (struct usbtouch_usb *usbtouch, unsigned char *pkt);
+	int  (*alloc)       (struct usbtouch_usb *usbtouch);
+	int  (*init)        (struct usbtouch_usb *usbtouch);
+	void (*exit)	    (struct usbtouch_usb *usbtouch);
+};
+```
+### usbtouch_dev_info
+这个数组的成员都是以前面说到的注册枚举值来区分. x y 参数及回调函数，都在 usbtouch_probe 中被抽离出来使用
+```c
+static struct usbtouch_device_info usbtouch_dev_info[] = {  
+#ifdef CONFIG_TOUCHSCREEN_USB_EGALAX  
+    [DEVTYPE_EGALAX] = {  
+        .min_xc        = 0x0,  
+        .max_xc        = 0x07ff,  
+        .min_yc        = 0x0,  
+        .max_yc        = 0x07ff,  
+        .rept_size    = 16,  
+        .process_pkt    = usbtouch_process_multi,//用于中断回调函数，用于处理中断，得到input的event，上传数据  
+        .get_pkt_len    = egalax_get_pkt_len,  
+        .read_data    = egalax_read_data, //用于中断回调函数，用于读取数据  
+    },  
+#endif  
+  
+...  
+  
+#ifdef CONFIG_TOUCHSCREEN_USB_IRTOUCH  
+    [DEVTYPE_IRTOUCH] = {  
+        .min_xc        = 0x0,  
+        .max_xc        = 0x0fff,  
+        .min_yc        = 0x0,  
+        .max_yc        = 0x0fff,  
+        .rept_size    = 8,  
+        .read_data    = irtouch_read_data,  
+    },  
+#endif   
+  
+...  
+  
+};  
+```
+### usbtouch_irq
+```c
+static void usbtouch_irq(struct urb *urb)  
+{  
+...
+    usbtouch->type->process_pkt(usbtouch, usbtouch->data, urb->actual_length);    
+  
+//这个type的类型就是 usbtouch_device_info，此时的process_pkt指针自然指向的是上面对应的函数，如果此时是触发的设备type为 DEVTYPE_EGALAX，那么这里调用的 usbtouch_process_multi  
+  
+//如果此时是DEVTYPE_IRTOUCH 那么就是执行 usbtouch_process_pkt函数，因为usbtouch_probe中：  
+  
+//    if (!type->process_pkt)  
+//        type->process_pkt = usbtouch_process_pkt;  
+  
+...  
+  
+}  
+```
+接下来的都会调用到usbtouch_process_pkt中，通过type->read_data，和上面一样的指针读取，然后调用input_report_key发送，input_sync用于同步.
