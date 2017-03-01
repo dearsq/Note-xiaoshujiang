@@ -75,7 +75,7 @@ static const struct usb_device_id usbtouch_devices[] = {
 ```
 USB_DEVICE 参数分别是 idVendor （厂商id）和 idProduct（产品id），一般用其作为设备标识
 
-后面的 driver_info 是枚举值
+后面的 driver_info 是枚举值，**会根据 driver_info 的值在 usbtouch_dev_info 中查找 driver 相关的配置**
 ```c
 /* device types */
 enum {
@@ -120,14 +120,16 @@ static int usbtouch_probe(struct usb_interface *intf,
 	if (id->driver_info == DEVTYPE_IGNORE)
 		return -ENODEV;
 
-	//获取端点
+	//usb 设备有一个 configuration 的概念，表示配置
+	//一个设备可以有多个配置，但是只能激活一个，比如一个设备可以下载固件 或者 设置不同的全局模式
+	// cur_altsetting 就表示当前的这个 setting（配置）
 	endpoint = usbtouch_get_input_endpoint(intf->cur_altsetting);
 	if (!endpoint)
 		return -ENXIO;
     //分配内存，申请 input 设备结构
 	usbtouch = kzalloc(sizeof(struct usbtouch_usb), GFP_KERNEL);
 	input_dev = input_allocate_device();
-	if (!usbtouch || !input_dev)
+	if (!usbtouch |获取端点| !input_dev)
 		goto out_free;
     //用到前面的枚举值，真正的 driver_info 是在 usbtouch_dev_info 中的
 	type = &usbtouch_dev_info[id->driver_info];
@@ -158,7 +160,9 @@ static int usbtouch_probe(struct usb_interface *intf,
 		if (!usbtouch->buffer)
 			goto out_free_buffers;
 	}
-	//分配一个 urb 用来获取 TP 设备返回触摸事件的数据
+	// 申请 urb 用于数据传输 的内存
+	//usbtouch->data：记录了用于普通传输用的内存指针
+　//usbtouch->buffer：记录了用于存储读取到的数据的内存指针
 	usbtouch->irq = usb_alloc_urb(0, GFP_KERNEL);
 	if (!usbtouch->irq) {
 		dev_dbg(&intf->dev,
@@ -197,7 +201,7 @@ static int usbtouch_probe(struct usb_interface *intf,
 	input_dev->open = usbtouch_open;
 	input_dev->close = usbtouch_close;
 
-	//input 设备触摸坐标初始化赋值
+	//设置打开和关闭设备
 	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
 	input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
 	input_set_abs_params(input_dev, ABS_X, type->min_xc, type->max_xc, 0, 0);
@@ -205,7 +209,7 @@ static int usbtouch_probe(struct usb_interface *intf,
 	if (type->max_press)
 		input_set_abs_params(input_dev, ABS_PRESSURE, type->min_press,
 		                     type->max_press, 0, 0);
-
+    //设置支持的输入子系统的事件：botton,key,press
 	if (usb_endpoint_type(endpoint) == USB_ENDPOINT_XFER_INT)
 		usb_fill_int_urb(usbtouch->irq, udev,
 			 usb_rcvintpipe(udev, endpoint->bEndpointAddress),
