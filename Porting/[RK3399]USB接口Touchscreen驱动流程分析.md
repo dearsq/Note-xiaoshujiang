@@ -225,6 +225,12 @@ static int usbtouch_probe(struct usb_interface *intf,
 	usbtouch->irq->transfer_dma = usbtouch->data_dma;
 	usbtouch->irq->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
 
+    //构建好 urb 后，在 open 方法中会实现向 usb core 递交 urb、usbtouch_irq 回调函数
+    //这里是两个 DMA 相关的 flag，一个是 URB_NO_SETUP_DMA_MAP（为控制传输准备，因为只有控制传输需要有这么一个 setup 阶段需要准备一个 setup packet） 另一个是 URB_NO_TRANSFER_DMA_MAP 
+    //transfer_buffer 是给各种传输方式中真正用来数据传输的
+    //而setup_packet 仅仅是在控制传输中发送setup 的包,控制传输除了setup 阶段之外,也会有数据传输阶段,这一阶段要传输数据还是得靠transfer_buffer,
+    //而如果使用dma 方式,那么就是使用transfer_dma.
+    //因为这里使用了mouse->irq->transfer_flags |= URB_NO_TRANSFER_DMA_MAP,所以应该给urb的transfer_dma赋值。所以用了：usbtouch->irq->transfer_dma = usbtouch->data_dma;
 	/* device specific allocations */
 	if (type->alloc) {
 		err = type->alloc(usbtouch);
@@ -288,6 +294,78 @@ out_free:
 	return err;
 }
 ```
+
+### usbtouch_open
+应用层打开触摸屏设备的时候，会调用
+```c
+static int usbtouch_open(struct input_dev *input)
+{
+	struct usbtouch_usb *usbtouch = input_get_drvdata(input);
+	int r;
+
+	usbtouch->irq->dev = interface_to_usbdev(usbtouch->interface);
+
+	r = usb_autopm_get_interface(usbtouch->interface) ? -EIO : 0;
+	if (r < 0)
+		goto out;
+
+	if (!usbtouch->type->irq_always) {
+		if (usb_submit_urb(usbtouch->irq, GFP_KERNEL)) {
+			r = -EIO;
+			goto out_put;
+		}
+	}
+
+	usbtouch->interface->needs_remote_wakeup = 1;
+out_put:
+	usb_autopm_put_interface(usbtouch->interface);
+out:
+	return r;
+}
+```
+向usb core递交了在probe中构建好的中断urb，注意，此处是成功递交给usb core以后就返回，而不是等到从设备取得数据。
+
+### usbtouch_irq
+
+当出现传输错误或获取到触摸屏数据后，urb回调函数将被执行
+
+```c
+static void usbtouch_irq(struct urb *urb)
+{
+       struct usbtouch_usb *usbtouch = urb->context;
+       int retval;
+       switch (urb->status) {
+       case 0:
+              /* success */
+              break;
+       case -ETIME:
+              /* this urb is timing out */
+              dbg("%s - urb timed out - was the device unplugged?",
+                  __func__);
+              return;
+       case -ECONNRESET:
+       case -ENOENT:
+       case -ESHUTDOWN:
+              /* this urb is terminated, clean up */
+              dbg("%s - urb shutting down with status: %d",
+                  __func__, urb->status);
+              return;
+       default:
+              dbg("%s - nonzero urb status received: %d",
+                  __func__, urb->status);
+              goto exit;
+       }
+       usbtouch->type->process_pkt(usbtouch, usbtouch->data, urb->actual_length);
+       //这个type的类型就是 usbtouch_device_info，此时的process_pkt指针自然指向的是上面对应的函数，如果此时是触发的设备type为 DEVTYPE_EGALAX，那么这里调用的 usbtouch_process_multi  
+exit:
+       retval = usb_submit_urb(urb, GFP_ATOMIC); //重新发送URB
+       if (retval)
+              err("%s - usb_submit_urb failed with result: %d",
+                  __func__, retval);
+}
+```
+
+
 ###  usbtouch_device_info 
  usbtouch_device_info 就是上面driver_info 以及usbtouch_probe 中抽取的驱动模块的info数组，不同的usbtouchscreen 注册的时候就是注册了一个枚举值，这个值就是usbtouch_dev_info 数组的第几元素.
 ```c
@@ -356,22 +434,3 @@ static struct usbtouch_device_info usbtouch_dev_info[] = {
   
 };  
 ```
-### usbtouch_irq
-```c
-static void usbtouch_irq(struct urb *urb)  
-{  
-...
-    usbtouch->type->process_pkt(usbtouch, usbtouch->data, urb->actual_length);    
-  
-//这个type的类型就是 usbtouch_device_info，此时的process_pkt指针自然指向的是上面对应的函数，如果此时是触发的设备type为 DEVTYPE_EGALAX，那么这里调用的 usbtouch_process_multi  
-  
-//如果此时是DEVTYPE_IRTOUCH 那么就是执行 usbtouch_process_pkt函数，因为usbtouch_probe中：  
-  
-//    if (!type->process_pkt)  
-//        type->process_pkt = usbtouch_process_pkt;  
-  
-...  
-  
-}  
-```
-接下来的都会调用到usbtouch_process_pkt中，通过type->read_data，和上面一样的指针读取，然后调用input_report_key发送，input_sync用于同步.
