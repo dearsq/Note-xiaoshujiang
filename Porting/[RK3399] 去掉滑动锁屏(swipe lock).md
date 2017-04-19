@@ -1,13 +1,11 @@
----
-title: [RK3399] 去掉滑动锁屏(swipe lock)
-tags: android,swipe lock
-grammar_cjkRuby: true
----
+
 Platform: RK3399 
 OS: Android 6.0 
 Version: v2017.0３
 
+
 ## 解决方法（一）
+
 在 ~/rk_Project_3399/device/rockchip/rk3399/rk3399_YOUR_DEVICE
 下的　system.prop 中添加　
 ```
@@ -16,8 +14,10 @@ ro.lockscreen.disable.default=true
 重新编译后，成功去掉锁屏，锁屏失效。
 
 ## 代码流程
+
 该属性　调用到一下两个地方：
 rk_Project_3399/frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/DatabaseHelper.java
+
 ```
 if (SystemProperties.getBoolean("ro.lockscreen.disable.default", false) == true) {
                 loadSetting(stmt, Settings.System.LOCKSCREEN_DISABLED, "1");
