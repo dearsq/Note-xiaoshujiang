@@ -1,7 +1,7 @@
 
 Platform: RK3399 
 OS: Android 6.0 
-Version: v2017.0３
+Version: v2017.03
 
 
 ## 解决方法（一）
