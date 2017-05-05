@@ -4,7 +4,7 @@ tags: rockchip,ubuntu
 grammar_cjkRuby: true
 ---
 
-# OrangePi_RK3399_制作UbuntuBase过程
+# OrangePi_RK3399_制作Ubuntu Base版本
 
 Platform: RK3399
 OS: Android 6.0 
