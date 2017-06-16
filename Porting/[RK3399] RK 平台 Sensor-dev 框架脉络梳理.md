@@ -1,6 +1,6 @@
 ---
 title: [RK3399] RK 平台Sensor-dev 框架脉络梳理
-tags: 新建,模板,小书匠
+tags: sensor,rockchip
 grammar_cjkRuby: true
 ---
 
