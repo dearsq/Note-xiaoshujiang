@@ -8,6 +8,8 @@ grammar_cjkRuby: true
 
 ![视频采集流程][1]
 
+![enter description here][3]
+
 ### 1. 打开设备文件
 两种方式：
 1）非阻塞
@@ -57,7 +59,7 @@ if ( ioctl (fd, VIDIOC_S_FMT, &fmt) == -1 ) {
 ```
 
 ### 4. 向驱动申请帧缓存
-通过 IOCTL 申请存储空间（帧缓存）来存放我们采集到的视频。
+通过 IOCTL 申请存储空间（帧缓存）来存放我们采集到的视频。一般不超过 5 个。
 ```
 struct v4l2_requestbuffers req;
 if ( ioctl (fd,VIDIOC_REQBUFS, &req ) == -1) {
@@ -68,7 +70,7 @@ v4l2_requestbuffers 中会定义缓存的数量，驱动据此申请对应数量
 
 ### 5. 获取每个缓存的信息 并 映射到用户空间
 通过 IOCTL VIDIOC_QUERYBUF 获取帧缓存地址。
-利用 mmap() 转换成上层的绝对地址，并将这个帧缓存放在缓存队列中。
+利用 **mmap**() 转换成上层的绝对地址，**并将这个帧缓存放在缓存队列中**，以便存放采集到的数据。
 ```
 typedef struct VideoBuffer {
 	void *start;
@@ -99,7 +101,7 @@ for (numBufs = 0; numBufs < req.count; numBufs++) {
 		return -1;
 	}
 	
-	// 放入缓存队列
+	// 放入缓存队列，以便存放采集到的数据
 	if (ioctl (fd, VIDIOC_QBUF, &buf ) == -1) {
 		return -1;
 	}
@@ -157,4 +159,15 @@ int ret = ioctl (fd, VIDIOC_STREAMOFF, &buf_type);
 close(fd);
 ```
 
+
+## V4L2 在 Android 中的架构
+
+为了让 Android 上层利用到 Camera 驱动、利用 Camera 模组采集想要的视频图像数据，我们也应该 Android 的 Framework 实现相应的 HAL 与 Service 。 如图：
+
+![Android Camera 系统架构图][4]
+
+
   [1]: http://wx2.sinaimg.cn/large/ba061518ly1fgqotebmf2j208u08fjs0.jpg
+  [2]: http://markdown.xiaoshujiang.com/img/spinner.gif "[[[1497940203707]]]"
+  [3]: http://markdown.xiaoshujiang.com/img/spinner.gif "[[[1497940262588]]]"
+  [4]: http://wx3.sinaimg.cn/large/ba061518ly1fgrn51p62dj20o70nj79a.jpg
