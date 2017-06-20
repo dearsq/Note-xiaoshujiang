@@ -1,14 +1,21 @@
 ---
-title: [OrangePi] Camera 代码浅析
+title: [RK3399] Camera 驱动代码浅析（一）Linux 中的 V4L2
 tags: camera
 grammar_cjkRuby: true
 ---
 
+Platform: RK3399 
+OS: Android 6.0 
+Kernel: 4.4 
+Version: v2017.04 
+
+[TOC]
+
+## Linux 中的 V4L2
+
 以 Video Capture Interface 为例来分析从下到上其代码流程。
 
 ![视频采集流程][1]
-
-![enter description here][3]
 
 ### 1. 打开设备文件
 两种方式：
@@ -23,10 +30,23 @@ cameraFd = open("/dev/video0", O_RDWR | O_NONBLOCK, 0);
 cameraFd = open("/dev/video0". O_RDWR, 0);
 ```
 ### 2. 取得设备所提供的功能（Capability）
-通过 IOCTL 获得设备提供的功能（Capability） 包括：可读、可写、调制方式、支持 VBI。
+通过 IOCTL 获得设备提供的功能（Capability）即查询设备属性，包括：可读、可写、调制方式、支持 VBI。
+capabilities 常用值:  
+V4L2_CAP_VIDEO_CAPTURE    // 是否支持图像获取  
 ```
 struct v4l2_capability capability;
 int ret = ioctl(fd, VIDIOC_QUERYCAP, &capability);
+```
+```
+structv4l2_capability  
+{  
+	__u8 driver[16];     // 驱动名字  
+	__u8 card[32];       // 设备名字  
+	__u8bus_info[32]; // 设备在系统中的位置  
+	__u32 version;       // 驱动版本号  
+	__u32capabilities;  // 设备支持的操作  
+	__u32reserved[4]; // 保留字段  
+};  
 ```
 
 ### 3.  取得/设定视频所支持的制式
@@ -68,7 +88,7 @@ if ( ioctl (fd,VIDIOC_REQBUFS, &req ) == -1) {
 ```
 v4l2_requestbuffers 中会定义缓存的数量，驱动据此申请对应数量的视频缓存。
 
-### 5. 获取每个缓存的信息 并 映射到用户空间
+### 5. 获取每个缓存的信息 并 映射到用户空间（mmap）
 通过 IOCTL VIDIOC_QUERYBUF 获取帧缓存地址。
 利用 **mmap**() 转换成上层的绝对地址，**并将这个帧缓存放在缓存队列中**，以便存放采集到的数据。
 ```
@@ -128,9 +148,14 @@ int buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 int ret = ioctl ( fd, VIDIOC_STREAMON, &buf_type );
 ```
 
-### 7. Ring Buffer 处理
+### 7. 环形缓冲队列的处理
 通过 IOCTL 的 VIDIOC_DQBUF 和 VIDIOC_QBUF：
 取出 FIFO 缓存中已采样的帧缓存，将处理完的缓存放在缓存队列尾部，以便视频采集过程可以循环使用他们。
+流程如下图：
+
+![Buffer 管理][2]
+
+代码如下：
 ```
 struct v4l2_buffer buf;
 memset （&buf, 0 ,sizeof( buf ) );
@@ -159,8 +184,12 @@ int ret = ioctl (fd, VIDIOC_STREAMOFF, &buf_type);
 close(fd);
 ```
 
+归纳其视频采集流程如下图：
 
-## V4L2 在 Android 中的架构
+![视频采集流程][3]
+
+
+##  Android 上层中的 V4L2
 
 为了让 Android 上层利用到 Camera 驱动、利用 Camera 模组采集想要的视频图像数据，我们也应该 Android 的 Framework 实现相应的 HAL 与 Service 。 如图：
 
@@ -168,6 +197,6 @@ close(fd);
 
 
   [1]: http://wx2.sinaimg.cn/large/ba061518ly1fgqotebmf2j208u08fjs0.jpg
-  [2]: http://markdown.xiaoshujiang.com/img/spinner.gif "[[[1497940203707]]]"
-  [3]: http://markdown.xiaoshujiang.com/img/spinner.gif "[[[1497940262588]]]"
+  [2]: http://img.my.csdn.net/uploads/201211/16/1353038230_2495.png
+  [3]: http://img.my.csdn.net/uploads/201211/16/1353038220_9320.png
   [4]: http://wx3.sinaimg.cn/large/ba061518ly1fgrn51p62dj20o70nj79a.jpg
