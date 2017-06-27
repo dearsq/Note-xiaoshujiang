@@ -1,5 +1,5 @@
 ---
-title: [RK3399] PCIe 转 SATA 调试步骤
+title: [RK3399] PCIe 转 SATA 调试记录
 tags: rockchip,pcie
 ---
 
