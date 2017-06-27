@@ -1,5 +1,5 @@
 ---
-title: [RK3399] PCIe 转 SATA 调试流程
+title: [RK3399] PCIe 转 SATA 调试步骤
 tags: rockchip,pcie
 grammar_cjkRuby: true
 ---
@@ -26,13 +26,12 @@ Version: v2017.04
 #lspci -n -d 1000:0056 -vvv |grep -i width 
 ```
 ### cat /proc/partitions
-可以查看分区信息
+可以查看分区信息。
 
 ### mount 
-将硬盘的设备节点挂载到我们系统的目录上
+调试 PCIe 转 SATA 设备，还需要在生成设备节点后将硬盘的设备节点挂载到我们系统的目录上。
 
 ## PCIe 调试步骤
-
 1. 在 menuconfig 中打开相应的调试宏：BUS Support -> PCI Debugging 
 2. 在 PCIe 设备没有插上的情况下开机，得到如下 log
 	```
@@ -48,11 +47,12 @@ Version: v2017.04
 	shell@rk3399_mid:/ $ busybox lspci
 	00:00.0 Class 0604: 17cd:0000
 	01:00.0 Class 0106: 1b21:0612
-	```
-	
+	```	
 	可以看到有几个 ID，可以根据 ID 确认设备是否被识别到。
-3. 之后就是加载设备驱动的时候，会有 VENDOR_ID。识别成功后才能加载 probe。
-4. 如果没有进入 probe ，有一种情况是设备已经被一个驱动占有了，找到这个设备使用的驱动，并且去除即可。
+	比如我们根据官方的 datasheet 知道，1b21 即 ASMEDIA 厂商的 Vendor ID，0612 即 Product ID。
+	
+4. 之后就是加载设备驱动的时候，会根据 VENDOR_ID 进行匹配。识别成功后才能加载 probe。
+5. 如果没有进入 probe ，有一种情况是设备已经被一个驱动占有了，找到这个设备使用的驱动，并且去除即可。
 
 ## PCI 驱动分析
 
