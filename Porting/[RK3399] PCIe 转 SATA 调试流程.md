@@ -9,8 +9,8 @@ OS: Android 6.0
 Kernel: 4.4 
 Version: v2017.04 
 
-## PCIe 基本知识
-### lspci
+## PCI 基本调试手段
+### busybox lspci
 `lspci` 命令查看 pci 设备。出现如下信息：
 ```
 0c:00.0 0100: 1000:0056 (rev 02)
@@ -25,8 +25,11 @@ Version: v2017.04
 ```
 #lspci -n -d 1000:0056 -vvv |grep -i width 
 ```
-### 
-PCI 链路中只能连接一个下游设备，这个下游设备的 Device Number 只能为 0。
+### cat /proc/partitions
+可以查看分区信息
+
+### mount 
+将硬盘的设备节点挂载到我们系统的目录上
 
 ## PCIe 调试步骤
 
@@ -60,4 +63,3 @@ PCI 驱动分为总线驱动和设备驱动。
 在启动过程中，PCI 总线进行初始化，分为两个部分 1） PCI Controllor 的注册和 PCI device 的枚举（遍历 PCI 总线树上所有可能的 dev func，记录下所有存在设备的 vendor id 设备名，作为后面 PCI 设备驱动初始化中注册 PCI 设备驱动用来匹配的重要依据）。
 
 
-## 
