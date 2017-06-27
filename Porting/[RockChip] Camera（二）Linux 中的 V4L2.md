@@ -1,13 +1,13 @@
 ---
-title: [RK3399] Camera 驱动代码浅析（一）Linux 中的 V4L2
+title: [RK3399] Camera（二）Linux 中的 V4L2
 tags: camera
 grammar_cjkRuby: true
 ---
 
-Platform: RK3399 
-OS: Android 6.0 
-Kernel: 4.4 
-Version: v2017.04 
+Platform: RK3399
+OS: Android 6.0
+Kernel: 4.4
+Version: v2017.04
 
 [TOC]
 
@@ -62,13 +62,13 @@ static void v4l2_device_release(struct kref *ref)
 ```c
 struct v4l2_subdev {
  		//指向父设备
-         structv4l2_device *v4l2_dev; 
+         structv4l2_device *v4l2_dev;
 		 //提供一些控制v4l2设备的接口
-         conststruct v4l2_subdev_ops *ops; 
+         conststruct v4l2_subdev_ops *ops;
 		 //向V4L2框架提供的接口函数。只能被V4L2框架层调用。在注册或打开子设备时，进行一些辅助性操作。
-         conststruct v4l2_subdev_internal_ops *internal_ops; 
+         conststruct v4l2_subdev_internal_ops *internal_ops;
 		 //subdev控制接口
-         structv4l2_ctrl_handler *ctrl_handler; 
+         structv4l2_ctrl_handler *ctrl_handler;
          /* namemust be unique */
          charname[V4L2_SUBDEV_NAME_SIZE];
          /*subdev device node */
@@ -100,23 +100,23 @@ struct video_device
 
          /*sysfs */
          structdevice dev;             /* v4l device */
-         structcdev *cdev;            //字符设备 
+         structcdev *cdev;            //字符设备
 
          /* Seteither parent or v4l2_dev if your driver uses v4l2_device */
          structdevice *parent;              /* deviceparent */
-         structv4l2_device *v4l2_dev;          /*v4l2_device parent */ 
+         structv4l2_device *v4l2_dev;          /*v4l2_device parent */
 
          /*Control handler associated with this device node. May be NULL. */
-         structv4l2_ctrl_handler *ctrl_handler; 
+         structv4l2_ctrl_handler *ctrl_handler;
 
          /* 指向video buffer队列*/
-         structvb2_queue *queue; 
+         structvb2_queue *queue;
          intvfl_type;      /* device type */
-         intminor;  //次设备号 
+         intminor;  //次设备号
 
          /* V4L2file handles */
          spinlock_t                  fh_lock; /* Lock for allv4l2_fhs */
-         structlist_head        fh_list; /* List ofstruct v4l2_fh */ 
+         structlist_head        fh_list; /* List ofstruct v4l2_fh */
 
          /*ioctl回调函数集，提供file_operations中的ioctl调用 */
          conststruct v4l2_ioctl_ops *ioctl_ops;
@@ -171,8 +171,8 @@ v4l2_ctrl_new_std(hdl, ops, V4L2_CID_BRIGHTNESS,-208, 127, 1, 0);
 #### 3.0 IO 访问的三种方式
 根据 IO 访问的方式不同，我们视频采集的方式自然也有三种
 1. read/write
-2. V4L2_MEMORY_MMAP 
-3. V4L2_MEMORY_USERPTR 
+2. V4L2_MEMORY_MMAP
+3. V4L2_MEMORY_USERPTR
 
 我们采用的是第二种 mmap 内存映射缓存区的方式。
 当 Camera Sensor 捕捉到图像并通过并口 或者 MIPI 传输到 CAMIF ，CAMIF 可以对图像数据进行调整（裁剪、翻转、格式转换）。
@@ -272,17 +272,17 @@ for (numBufs = 0; numBufs < req.count; numBufs++) {
 	if ( ioctl ( fd, VIDIOC_QUERYBUF, &buf) == -1 ) {
 		return -1;
 	}
-	
+
 	buffers[numBufs].length = buf.length;
 	//转换成绝对地址
-	buffers[numBufs].start = mmap (NULL, buf.length. 
+	buffers[numBufs].start = mmap (NULL, buf.length.
 													PROT_READ | PORT_WRITE,
 													MAP_SHARED,
 													fd, buf.m.offset );
 	if ( buffers[numBufs].start == MAP_FAILED) {
 		return -1;
 	}
-	
+
 	// 放入缓存队列，以便存放采集到的数据
 	if (ioctl (fd, VIDIOC_QBUF, &buf ) == -1) {
 		return -1;
@@ -302,7 +302,7 @@ for (numBufs = 0; numBufs < req.count; numBufs++) {
 2）mmap 内存映射
 3）userptr 用户指针：内存由应用程序分配，并把地址传递到内核中的驱动程序，由 V4L2 驱动程序直接将数据填充到用户空间的内存中。（v4l2_requestbuffers.memory 设置为 V4L2_MEMORY_USERPTR）。
 
-userptr > mmap > read/write 
+userptr > mmap > read/write
 
 调用 IOCTL 的 VIDIOC_STREAMON 命令来启动视频采集。
 ```

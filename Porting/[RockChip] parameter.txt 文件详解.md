@@ -1,5 +1,5 @@
 ---
-title: [RK3399] Rockchip 平台 parameter.txt 文件详解
+title: [RockChip] parameter.txt 文件详解
 tags: RockChip
 grammar_cjkRuby: true
 ---
@@ -16,7 +16,7 @@ Parameter 最大为 64KB。
 ## parameter 分析
 
 固件版本，打包 update.img 用到。升级工具据此识别固件版本
-**FIRMWARE_VER: 6.0.1** 
+**FIRMWARE_VER: 6.0.1**
 #机型，打包 update.img 用到。用于升级工具显示。
 **MACHINE_MODEL: RK3399**
 #产品ID，为数字或字母组合，打包 update.img 使用。
@@ -41,7 +41,7 @@ Parameter 最大为 64KB。
 3:= 在 Loader 需要控制电源时,输出高电平
 0:= 在 Loader 需要控制电源时,输出低电平
 这里是控制 GPIO0 A0 输出高电平
-**PWR_HLD: 0,0,A,0,1** 
+**PWR_HLD: 0,0,A,0,1**
 
 #内核地址，bootloader 将加载此地址，如果 kernel 编译地址改变，需要修改此值
 **#KERNEL_IMG: 0x00280000**
@@ -54,8 +54,8 @@ Parameter 最大为 64KB。
 **#RECOVER_KEY: 1,1,0,20,0**
 
 **#in section; per section 512(0x200) bytes**
-**CMDLINE:** 
-**androidboot.baseband=N/A** 
+**CMDLINE:**
+**androidboot.baseband=N/A**
 **androidboot.selinux=disabled** 安全强化 Linux 是否打开
 **androidboot.hardware=rk30board** 硬件平台
 **androidboot.console=ttyFIQ0** 串口定义

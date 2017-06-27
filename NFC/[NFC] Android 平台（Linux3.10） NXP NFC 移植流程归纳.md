@@ -1,5 +1,6 @@
 ---
-title: Android 平台（Linux3.10） NXP NFC 移植流程归纳
+title: [NFC] Android 平台（Linux3.10） NXP NFC 移植流程归纳
+tags: nfc,android
 grammar_cjkRuby: true
 ---
 WPI ATU Younix @ 2016.7.28
@@ -16,8 +17,8 @@ Kconfig
 1. Device 部分
 2. external 部分
 3. framework 部分
-4. packages\app\Nfc 
-5. 选择 PN547 or PN548 
+4. packages\app\Nfc
+5. 选择 PN547 or PN548
 6. ESE 开关
 7. 添加 conf 与 .so 文件
 8. 其他
@@ -81,7 +82,7 @@ source “drivers/pn544/Kconfig"
 ```
 ###  2. 修改平台配置
 #### rc
-IDH/device/PLATFORM_NAME/xxx.rc 
+IDH/device/PLATFORM_NAME/xxx.rc
 为节点添加权限
 展讯平台是 IDH/device/sprd/scx35/init.sc8830.rc
 在 on boot 之后添加
@@ -97,7 +98,7 @@ mkdir /data/nfc 0770 nfc nfc
 mkdir /etc/param
 ```
 #### hardware
-Sources\hardware\libhardware\include\hardware\nfc.h 
+Sources\hardware\libhardware\include\hardware\nfc.h
 也用我们 hardware 目录下的 .h 替换
 
 #### dts
@@ -120,9 +121,9 @@ nfc-pn544@28{
         };
 ```
 
-修改完驱动部分后，进行编译，可以利用 
+修改完驱动部分后，进行编译，可以利用
 ```
-make -32 2>&1|tee makeKernel.log 
+make -32 2>&1|tee makeKernel.log
 ```
 将编译日志导出到 makeKernel.log 中以便于分析编译错误。
 
@@ -140,7 +141,7 @@ make -32 2>&1|tee makeKernel.log
 
 ## 二、Android Middleware 的移植
 根据 Android 版本的不同，获取到相应的 Middleware。
-Android 5.1 获取的是 
+Android 5.1 获取的是
 NFC_NCIHALx_ARF.3.3.0_L_FW08.01.26_FW10.01.14（Android5.1 无eSE）
 NFC_NCIHALx_ARF.3.5.0_L_FW08.01.26_FW10.01.18（Android5.1 有eSE）
 Android 6.0 获取的是
@@ -161,7 +162,7 @@ PRODUCT_PACKAGES += \
 	NfcNci \
 	Tag \
 	com.android.nfc_extras
-    
+
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/com.nxp.mifare.xml:system/etc/permissions/com.nxp.mifare.xml \
     frameworks/native/data/etc/com.android.nfc_extras.xml:system/etc/permissions/com.android.nfc_extras.xml \
@@ -203,7 +204,7 @@ packages\apps\Nfc\Nci\jni\Android.mk
 #### Select the CHIP ####
 NXP_CHIP_TYPE := $(PN548C2)
 ```
-释放的代码默认是 PN548，代表 PN548 或 PN66T 
+释放的代码默认是 PN548，代表 PN548 或 PN66T
 如果采用的是 PN547 或者 PN65T，请将 **PN548C2** 修改为  **PN547C2**。
 
 ### 6. ESE 开关
@@ -242,14 +243,14 @@ libpn548ad_fw.so 或者 libpn547_fw.so （在释放的 Firmware 目录下）
 NFC_FW_PATCH := device/sprd/scx35/libpn548ad_fw.so
 PRODUCT_COPY_FILES += \
     $(NFC_FW_PATCH):system/vendor/firmware/libpn548ad_fw.so
-	
+
 NFC_CONFIG_PATCH :=device/sprd/scx35/libnfc-brcm.conf
 PRODUCT_COPY_FILES += \
     $(NFC_CONFIG_PATCH):system/etc/libnfc-brcm.conf
-	
+
 NFC_CONFIG_NXP_PATCH :=device/sprd/scx35/libnfc-nxp.conf
 PRODUCT_COPY_FILES += \
-    $(NFC_CONFIG_NXP_PATCH):system/etc/libnfc-nxp.conf 
+    $(NFC_CONFIG_NXP_PATCH):system/etc/libnfc-nxp.conf
 ```
 对于 **PN7120** 则不需要配置 固件 .so 路径。因为 PN7120 不需要下载固件。
 
@@ -263,14 +264,12 @@ PRODUCT_COPY_FILES += \
 
 ## 三、附录
 ### pn547_i2c_test 工具使用说明
-pn547_i2c_test 为测试程序 
-测试程序的使用方法如下 
-1.  将 pn547_i2c_test.rar 解压到 external 目录下 mm 编译 
-2.  将生成的 pn547_i2c_test push 到 system/bin 
-adb shell 
-cd system/bin 
-chmod 777 pn547_i2c_test 
-./pn547_i2c_test  
+pn547_i2c_test 为测试程序
+测试程序的使用方法如下
+1.  将 pn547_i2c_test.rar 解压到 external 目录下 mm 编译
+2.  将生成的 pn547_i2c_test push 到 system/bin
+adb shell
+cd system/bin
+chmod 777 pn547_i2c_test
+./pn547_i2c_test 
 务必利用本工具确认 KERNEL 部分正常通信后，再移植 Middleware 部分。
-
-

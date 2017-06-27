@@ -1,6 +1,6 @@
 ---
-title: RK 平台下的 Framebuffer 设备驱动
-tags: 新建,模板,小书匠
+title: [RockChip] Framebuffer 设备驱动
+tags: rockchip,framebuffer
 grammar_cjkRuby: true
 ---
 
@@ -63,14 +63,14 @@ struct fb_info {
      struct device *dev;   /* This is this fb device */
 
      char __iomem *screen_base; /* Virtual address */
-     unsigned long screen_size; /* Amount of ioremapped VRAM or 0 */ 
+     unsigned long screen_size; /* Amount of ioremapped VRAM or 0 */
      ……
 };
 ```
 #### 2) fbmem.c
 和其它的内核代码中的字符驱动类似，同样，如果你要使用这个驱动，你必须去注册这个设备驱动。
 显示驱动的分析都是由 drivers/video/fbmem.c 开始 。
-我们可以发现 fbmem.c 里定义 register_framebuffer/unregister_framebuffer 
+我们可以发现 fbmem.c 里定义 register_framebuffer/unregister_framebuffer
 
 由分析可以得知，
 drivers/video/rockchip/lcdc/rk3288_lcdc.c 中的 probe 函数(rk3288_lcdc_probe)中有调用 rk_fb_register
@@ -89,7 +89,7 @@ drivers/video/rockchip/rk_fb.c 中的 rk_fb_register 调用 register_framebuffer
 编写framebuffer用户态程序需要以下步骤:
 1、初始化framebuffer
 2、向framebuffer写数据
-3、退出framebuffer 
+3、退出framebuffer
 ```c
 #include <stdio.h>
 #include <fcntl.h>
@@ -99,8 +99,8 @@ drivers/video/rockchip/rk_fb.c 中的 rk_fb_register 调用 register_framebuffer
 #define    WIDTH   1280
 #define    HIGHT   1024
 
-static int Frame_fd ; 
-static int *FrameBuffer = NULL ; 
+static int Frame_fd ;
+static int *FrameBuffer = NULL ;
 static int W , H ;
 
 //写framebuffer
@@ -114,7 +114,7 @@ int main(void)
     Frame_fd = open("/dev/fb0" , O_RDWR);
     if(-1 == Frame_fd){
 perror("open frame buffer fail");
-return -1 ; 
+return -1 ;
     }
 
     2、对framebuffer进行内存映射mmap
@@ -135,14 +135,14 @@ return -1 ;
 perror("memory map fail");
 return -2 ;
     }
-    
+
     3、对framebuffer写数据
     char buffer[WIDTH*HIGHT*3];  //我们要写入的数据
     while(1) {
     Write_FrameBuffer(buffer);
     printf("count:%d \n" , count++);
     }
-    
+
     4、退出framebuffer
     munmap(FrameBuffer ,  W*H*4); //解除内存映射
     close(Frame_fd);  //关闭文件描述符
@@ -151,39 +151,20 @@ return -2 ;
 //写framebuffer
 int Write_FrameBuffer(const char *buffer)
 {
-int row  , col ; 
-char *p = NULL ; 
+int row  , col ;
+char *p = NULL ;
         //遍历分辨率1024*1280的所有像素点
 for(row = 0 ; row <1024 ; row++){
    for(col = 0 ; col < 1280 ;  col++){
        if((row < H)  && (col < W)){
-   p = (char *)(buffer + (row * W+ col ) * 3); 
+   p = (char *)(buffer + (row * W+ col ) * 3);
      //转RGB格式
    FrameBuffer[row*1280+col] = RGB((unsigned char)(*(p+2)),(unsigned char)(*(p+1)),(unsigned char )(*p));
 }
    }
 }
-return 0 ; 
+return 0 ;
 }
 ```
-至此，我们的framebuffer上层调用程序就写完了，当然这个程序你看不到什么图片，只能看到一块被映射的区域，然后printf不断的在打印数据。 
+至此，我们的framebuffer上层调用程序就写完了，当然这个程序你看不到什么图片，只能看到一块被映射的区域，然后printf不断的在打印数据。
     如果你有兴趣，可以写一个图片数据进去，这时候要用到bmp，yuyv格式的图片知识，让图片可以显示在屏幕上.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

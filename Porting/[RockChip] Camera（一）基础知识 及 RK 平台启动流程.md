@@ -1,5 +1,5 @@
 ---
-title: Camera（摄像头）基础 及 Android 平台（RK）启动流程
+title: [RockChip] Camera（一）基础知识 及 RK 平台启动流程
 tags: Camera
 grammar_cjkRuby: true
 ---
@@ -8,9 +8,9 @@ grammar_cjkRuby: true
 Camera 模组由
 **镜头 LENS
 对焦马达 VCM
-图像传感器 SENOSOR 
-图像信号处理器 ISP** 
-组成 
+图像传感器 SENOSOR
+图像信号处理器 ISP**
+组成
 ### 成像原理
 **镜头（LENS）**拍摄影像——>
 **传感器（SENSOR）**接受滤色镜滤波后的光学图像，并转化为电信号——>
@@ -102,7 +102,7 @@ Android：
         |CameraSocAdapter.cpp
         |CameraHalUtil.cpp
         |AppMsgNotifier.cpp
-        |CameraAdapter.cpp 
+        |CameraAdapter.cpp
 
 ### Kernel
 video4linux2(V4L2) 是 Linux内核中关于视频设备的内核驱动，它为Linux中视频设备访问提供了通用接口。
@@ -211,19 +211,19 @@ struct mutex *lock;
 
 #### V4L2 主要 IO 操作
 V4L2驱动的Video设备在用户空间通过各种ioctl调用进行控制，并且可以使用mmap进行内存映射。V4l2主要的IO操作：
-VIDIOC_REQBUFS：分配内存 
-VIDIOC_QUERYBUF：把VIDIOC_REQBUFS中分配的数据缓存转换成物理地址 
-VIDIOC_QUERYCAP：查询驱动功能 
-VIDIOC_ENUM_FMT：获取当前驱动支持的视频格式 
-VIDIOC_S_FMT：设置当前驱动的频捕获格式 
-VIDIOC_G_FMT：读取当前驱动的频捕获格式 
-VIDIOC_TRY_FMT：验证当前驱动的显示格式 
-VIDIOC_CROPCAP：查询驱动的修剪能力 
-VIDIOC_S_CROP：设置视频信号的边框 
-VIDIOC_G_CROP：读取视频信号的边框 
-VIDIOC_QBUF：把数据从缓存中读取出来 
-VIDIOC_DQBUF：把数据放回缓存队列 
-VIDIOC_STREAMON：开始视频显示函数 
+VIDIOC_REQBUFS：分配内存
+VIDIOC_QUERYBUF：把VIDIOC_REQBUFS中分配的数据缓存转换成物理地址
+VIDIOC_QUERYCAP：查询驱动功能
+VIDIOC_ENUM_FMT：获取当前驱动支持的视频格式
+VIDIOC_S_FMT：设置当前驱动的频捕获格式
+VIDIOC_G_FMT：读取当前驱动的频捕获格式
+VIDIOC_TRY_FMT：验证当前驱动的显示格式
+VIDIOC_CROPCAP：查询驱动的修剪能力
+VIDIOC_S_CROP：设置视频信号的边框
+VIDIOC_G_CROP：读取视频信号的边框
+VIDIOC_QBUF：把数据从缓存中读取出来
+VIDIOC_DQBUF：把数据放回缓存队列
+VIDIOC_STREAMON：开始视频显示函数
 VIDIOC_STREAMOFF：结束视频显示函数。
 
 ### 模组驱动
@@ -295,7 +295,7 @@ rk_sensor_ioctrl()      //对pwrdn,rst等io进行控制
 ### 驱动移植
 参考现在的驱动进行驱动移植，注意总线参数配置。
 ```
-#define SENSOR_BUS_PARAM (V4L2_MBUS_MASTER 
+#define SENSOR_BUS_PARAM (V4L2_MBUS_MASTER
                            |V4L2_MBUS_PCLK_SAMPLE_RISING
                            |V4L2_MBUS_HSYNC_ACTIVE_HIGH
                            |V4L2_MBUS_VSYNC_ACTIVE_LOW
@@ -351,6 +351,7 @@ Rk3288 ,rk3368 配置对应的cam_board.xml文件：
 				</Sensor>
 ```
 USB摄像头主要注意确认如下配置是否选上：
+
 ```c
 Device Drivers ‐‐‐>
     <*> Multimedia support ‐‐‐>
@@ -372,7 +373,7 @@ Device Drivers ‐‐‐>
 #### DVP接口模组
 确认cif通道是否配对；
 确认模组排线是否太长，是否有干扰,是否两个摄像头都处于工作状态；
-加强模组驱动能力； 
+加强模组驱动能力；
 测量时钟数据波形。
 
 #### MIPI 接口模组

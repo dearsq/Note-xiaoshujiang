@@ -1,6 +1,6 @@
 ---
-title: NFC 程序设计（基础知识）
-tags: NFC,Tag,NfcAdapter,NfcManager
+title: [NFC] NFC 程序设计（基础知识）
+tags: nfc,android,nfcadapter,nfcmanager
 grammar_cjkRuby: true
 ---
 android 官方手册：[NFC Developer][1]
@@ -123,11 +123,11 @@ public boolean isWritable ()
 //Determine if the tag is writable.判断是否可写
 public int getMaxSize ()
 //Get the maximum NDEF message size in bytes.
-public void writeNdefMessage (NdefMessage msg) 
+public void writeNdefMessage (NdefMessage msg)
 //Overwrite the NdefMessage on this tag.向这个Tag写入数据
-public String getType () 
+public String getType ()
 //Get the NDEF tag type.
-public boolean makeReadOnly () 
+public boolean makeReadOnly ()
 //Make a tag read-only.
 ```
 NdefFormatable类详解：

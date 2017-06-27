@@ -1,6 +1,6 @@
 ---
-title: NFC 程序设计（NDEF 格式介绍）
-tags: NFC
+title: [NFC] NFC 程序设计（NDEF 格式介绍）
+tags: nfc
 grammar_cjkRuby: true
 ---
 **NDEF 文本格式**
@@ -10,7 +10,7 @@ grammar_cjkRuby: true
 这些数据格式由 [NFC Forum 相关规范][1] 定义
 
   [1]: http://www.nfc-forum.org/specs/spec_dashboard
-  
+
   ## NDEF 文本数据格式
    **NDEF 文本数据格式**
 
@@ -19,7 +19,7 @@ grammar_cjkRuby: true
   |0|1|状态字节|
   |1|\<n\>|ISO/IANA语言编码,格式是 USASCII，由状态字节后6位决定|
   |\<n+1\>| \<m\>|文本数据，编码格式是 UTF-8,编码格式由状态字节的前三位决定|
-  
+
   **状态字节码编码格式**
   |字节位（0是最低位）|含义|
   |--|--|
@@ -32,16 +32,3 @@ grammar_cjkRuby: true
 标准有两个：
 1. TNF（类型名格式，Type Name Format）必须是 NdefRecord.TNF_WELL_KNOWN
 2. 可变的长度类型必须是 NdefRecord.RTD_TEXT
-
-
-
-
-
-
-
-
-
-
-
-
-

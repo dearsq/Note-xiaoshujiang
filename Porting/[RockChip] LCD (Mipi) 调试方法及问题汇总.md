@@ -1,6 +1,6 @@
 ---
-title: RK 平台 LCD 调试方法及问题汇总
-tags: RK,LCD,MIPI
+title: [rockchip] LCD 调试方法及问题汇总
+tags: rk,lcd,mipi
 grammar_cjkRuby: true
 ---
 ## 调试流程
@@ -33,7 +33,7 @@ disp_mipi_init: mipi_dsi_init{
 		rockchip,mipi_dsi_num	= <1>;
 };
 ```
-**看原理图，完成管脚的配置** 
+**看原理图，完成管脚的配置**
 ![](http://ww3.sinaimg.cn/large/ba061518gw1f75tavt1wmj20g40qddim.jpg)
 可以看到，我这里只用到了 LCD_RST，没有用到 LCD_EN （是  VCC_LCD）,说明是默认使能的，也没有 LCD_CS
 所以进行如下配置
@@ -65,7 +65,7 @@ disp_mipi_power_ctr: mipi_power_ctr {
 水平方向的信息：
 ![](http://ww2.sinaimg.cn/large/ba061518gw1f75tkaa6bbj20sj09swhq.jpg)
 要注意的是， HS HBP HFP 虽然最小值是 5，但是不能设置的这么低
-因为后面还有两条要求，HBLK = HS + HBP + HFP >= 24   且  HS + HBP  > 19 
+因为后面还有两条要求，HBLK = HS + HBP + HFP >= 24   且  HS + HBP  > 19
 所以最初设置 HS = HBP = HFP = 10
 ```dts
 // lcd-xxx-mipi.dtsi 中的 屏参
@@ -75,7 +75,7 @@ disp_timings: display-timings {
 		timing0: timing0 {
 			screen-type = <SCREEN_MIPI>;		//单mipi SCREEN_MIPI 双mipi SCREEN_DUAL_MIPI
 			lvds-format = <LVDS_8BIT_2>;		//不用配置
-			out-face    = <OUT_P888>;		//屏的接线格式 
+			out-face    = <OUT_P888>;		//屏的接线格式
 			//配置颜色，可为OUT_P888（24位）、OUT_P666（18位）或者OUT_P565（16位）
 			clock-frequency = <120000000>;		//dclk频率，看规格书，或者 H×V×fps
 			hactive = <540>;			//水平有效像素
@@ -149,12 +149,12 @@ disp_mipi_init_cmds: screen-on-cmds {
 比如这里我拿到的是 MTK 平台的 LCD 初始化代码：
 ```
 data_array[0]=0x00043902;
-data_array[1]=0x8983FFB9; 
-dsi_set_cmdq(&data_array, 2, 1); 
+data_array[1]=0x8983FFB9;
+dsi_set_cmdq(&data_array, 2, 1);
 MDELAY(10);
 ```
-分析得知 
-array[0] 中 04 代表要传输的**字节数**，3902 代表传输的是**长包数据** 
+分析得知
+array[0] 中 04 代表要传输的**字节数**，3902 代表传输的是**长包数据**
 //MTK平台 3900 代表不传值 3905 表示传一个数据 3902 表示传多个数据
 array[1] 中的参数全部为传输的参数，而且正确的传参数据为 B9 FF 83 89
 所以移植到 RK 平台就是：

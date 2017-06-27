@@ -1,5 +1,5 @@
 ---
-title: [OrangePi] RK Linux 平台启动过程（5个阶段）详解
+title: [RK3399] Linux 平台启动过程（5个阶段）详解
 tags: linux,rockchip
 grammar_cjkRuby: true
 ---
@@ -13,26 +13,26 @@ Hardware Platform: RK3399
 二、RK idbLoader （由 RK DDR init bin 和 miniloader bin 组成）
 
 ![RK 启动 5 阶段示意图][1]
- 
- 
+
+
   所以从不同介质（eMMC / SD Card / U-Disk / net）启动的时候，实际上是不同的概念：
  Stage 1 在芯片内固化的 Boot ROM 中。它将引导启动 Stage 2 ，有可能引导 Stage 3（仅当使能 SPL_BACK_TO_BROM 选项的时候）。
  从 eMMC 或 SDCard 启动的时候，所有固件（stage 2,3,4,5）都在 eMMC 或 SD Card。
  从 SPI Flash 启动的时候，stage 2 和 stage 3（只有 SPL 和 U-Boot）在 SPI Flash 中，stage 4 和 stage 5 在其他的地方。
  从 U-Disk 启动的时候，stage 4 和 stage 5（不包括 SPL 和 U-boot）是在 U-Disk 中的，只有 5 可供选择。
  从 net/tftp 启动的时候，stage 4 和 stage 5（不包括 SPL 和 U-boot）是在 网络 上的。
- 
+
  ## Package Option
  下面是 stage 2～4 package 的 file list。
- 
+
  从源码编译出来的：
  U-Boot 编译出 u-boot-spl.bin, u-boot.bin(可以用 u-boot-nodtb.bin 和 u-boot.dtb 替代）
  Kernel 编译出 kernel Image/zImage, kernel dtb
  ATF 编译出 bl31.bin
- 
+
  从 rkbin 文件夹中提供的：
- ddr、usbplug、miniloader、bl31 
-    
+ ddr、usbplug、miniloader、bl31
+
 ### idbspl.img
 这个 img 是 U-Boot SPL, SPL_BACK_TP_BROM 选项**禁能**。
 ```
@@ -59,21 +59,21 @@ cat rkxx_miniloader_vx.xx.bin >> idbloader.img
 ```
 烧录 idbloader.img 到偏移地址 0x40 处，下面你会需要用以启动 stage 3 的 uboot.img。
 
-### bl3.itb 
+### bl3.itb
 当使用 SPL 来加载 ATF，打包 bl31.bin ,u-boot-nodtb.bin , uboot.dtb 到 one FIT image
 ```
 ./tools/mkimage -f fit4spl.its -E bl3.itb
 ```
-烧写 bl3.itb 到偏移位置 0x200 处，它依赖于 烧录到 0x40 的 idbspl.img 
+烧写 bl3.itb 到偏移位置 0x200 处，它依赖于 烧录到 0x40 的 idbspl.img
 
-### uboot.img 
+### uboot.img
 当使用 来自 RK miniloader 的  idbLoader 时，需要通过 Rockchip 工具 loaderimage 将 u-boot.bin 打包成 miniloader 的可加载格式。
 ```
 ./tools/loaderimage --pack --uboot u-boot.bin uboot.img
 ```
 将 uboot.img 烧录到 0x4000， stage 3。.
 
-### trust.img 
+### trust.img
 当使用 idbLoader 时，为了使用 miniloader，需要通过 Rockchip 工具 trustmerge 将  bl31.bin 打包成 miniloader 的可加载格式。
 ```
 ./tools/trustmerge tools/rk_tools/RKTRUST_RKXXXXTRUST.ini
