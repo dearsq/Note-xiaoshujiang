@@ -124,13 +124,7 @@ OpenLib:
     #endif
       //switchUser();
 ```
-需要注意 RK 平台会在 system.prop 中重新设定 拨号库的路径。所以需要在 system.prop 中修改指定库文件的路径：device/rockchip/rk3399/system.prop
-```git
--- rild.libpath=/system/lib/libril-rk29-dataonly.so
--- rild.libargs=-d /dev/ttyACM0
-++ rild.libpath=/system/lib/libreference-ril.so
-++ rild.libargs=-d /dev/ttyUSB0
-```
+
 如果需要在 非root 下进行调试的话，还可以在 common/ueventd.rockchip.rc 中加上：
 ```
 # for radio
@@ -160,7 +154,7 @@ build/core/base_rules.mk:157: *** hardware/ril/reference-ril: MODULE.TARGET.EXEC
 rm externel/ppp/chat -rf 
 ```
 #### 3. RIL 没有生效（完成了 RIL 部分的移植后，看起来 4G 模块没有起作用）
-1）确认 RIL 守护进程有没有运行
+1）确认 RIL 进程有没有运行
 ```
 # getprop init.svc.ril-daemon
 应该得到 Running ，如果得到的是 Stopped 或者 Restarting，则需要重新检查移植步骤
@@ -168,11 +162,22 @@ rm externel/ppp/chat -rf
 2）看一下 lib 是否是 Quectel 的
 ```
 # getprop gsm.version.ril-impl
-RIL_RK_DATA_V3.6_android6.0 //这不是 Quectel 的
 如果是 Quectel 的应该是
-Quectel_Android_RIL_SR
+Quectel_Android_RIL_SR 开头的
 ```
-2）确认 SELinux 没有打开
+如果这里显示的是
+RIL_RK_DATA_V3.6_android6.0 //说明调用到 rk 自己的 ril 库了，去下一步确定 init.rc 的修改有没有成功，如果没成功参照 第4点。
+如果这里显示的是 空
+说明 库 和平台不兼容，检查是不是调用和自己平台兼容的库，
+比如 32 位是在 system/lib 下，64位 是在 system/lib64 下
+
+3）确认一下 init.rc 中的修改有没有成功
+```
+cat init.rc | grep ril-daemon
+```
+没有成功请参照后面的第4点。
+
+4）确认 SELinux 没有打开
 ```
 # getenforce 来获取 SELinux 的状态
 
@@ -196,7 +201,23 @@ Quectel_Android_RIL_SR
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/init.rc:root/init.rc
 ```
-即可
+
+另外，在3399 平台，会在 device.mk 中追加一次 lib 的路径
+./rockchip/common/device.mk:588:    rild.libpath=/system/lib64/libril-rk29-dataonly.so
+它会将之前我们指定的库的路径覆盖，需要将这一行删掉。
+
+#### 5. 不修改 init.rc ，修改 system.prop 的方式指定 lib 库
+有些产品，比如 vr、box 会在 system.prop 中指定 rild.libpath 。。所以我们也可以参考 RK 提供的做法来完成 库 路径的指定：
+比如我是 mid 产品，指定 lib 路径为 64 bit 的库路径：
+```
+vi device/rockchip/rk3399/rk3399_mid/system.prop
+-- rild.libpath=/system/lib/libril-rk29-dataonly.so
+-- rild.libargs=-d /dev/ttyACM0
+++ rild.libpath=/system/lib64/libreference-ril.so
+++ rild.libargs=-d /dev/ttyUSB0
+
+```
+
 
   [1]: https://en.wikipedia.org/wiki/Qualcomm_Gobi
   [2]: http://wx1.sinaimg.cn/large/ba061518ly1fh13zv9nprj20mt0j4gnu.jpg
