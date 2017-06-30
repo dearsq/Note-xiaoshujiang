@@ -131,12 +131,13 @@ OpenLib:
 ++ rild.libpath=/system/lib/libreference-ril.so
 ++ rild.libargs=-d /dev/ttyUSB0
 ```
-如果需要在 非root 下进行调试的话，还可以在 init.rc 加上：
+如果需要在 非root 下进行调试的话，还可以在 common/ueventd.rockchip.rc 中加上：
 ```
-chmod 777 /dev/ttyUSB0  
-chmod 777 /dev/ttyUSB1  
-chmod 777 /dev/ttyUSB2  
-chmod 777 /dev/ttyUSB3
+# for radio
+/dev/ttyUSB0              0666   radio		radio
+/dev/ttyUSB1              0666   radio		radio
+/dev/ttyUSB2              0666   radio		radio
+/dev/ttyUSB3              0666   radio		radio
 ```
 重新编译即可。
 
@@ -158,7 +159,7 @@ build/core/base_rules.mk:157: *** hardware/ril/reference-ril: MODULE.TARGET.EXEC
 ```
 rm externel/ppp/chat -rf 
 ```
-#### 3. RIL 没有生效
+#### 3. RIL 没有生效（完成了 RIL 部分的移植后，看起来 4G 模块没有起作用）
 1）确认 RIL 守护进程有没有运行
 ```
 # getprop init.svc.ril-daemon
@@ -177,6 +178,25 @@ Quectel_Android_RIL_SR
 
 # setenforce 0 将其设置为 Permissive
 ```
+
+#### 4. init.rc 中的修改没有生效
+在 device/rockchip/rk3399/init.rc 中的修改没有生效
+去 out/.../rk3399_mid/root/init.rc 中看，并没有产生我们需要的修改
+
+在 rk3399/device.mk 中可以看到
+```
+#ifeq ($(strip $(TARGET_BOARD_PLATFORM_PRODUCT)), tablet)
+#PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/rk3399_32/init.rc:root/init.rc
+#endif
+```
+如果是 tablet 产品，会 copy rk3399_32 中的 init rc 到 mid/init.rc 中。
+所以这个地方的逻辑修改为 
+```
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/init.rc:root/init.rc
+```
+即可
 
   [1]: https://en.wikipedia.org/wiki/Qualcomm_Gobi
   [2]: http://wx1.sinaimg.cn/large/ba061518ly1fh13zv9nprj20mt0j4gnu.jpg
