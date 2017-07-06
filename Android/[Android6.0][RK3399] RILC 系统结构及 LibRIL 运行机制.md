@@ -4,6 +4,8 @@ tags: rockchip,ril,rild,android,telephony
 grammar_cjkRuby: true
 ---
 
+[TOC]
+
 ## RILC 代码结构
 ```
 hardware/ril/
