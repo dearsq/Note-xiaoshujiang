@@ -292,6 +292,7 @@ ril_event.cpp
 RIL 事件相关的数据均封装在 ril_event 结构体中，一个 RIL 事件会对应一个 ril_event 结构体。
 LibRIL 在启动完成后进入运行状态，将围绕 ril_event 结构体处理 RIL 相关事件。
 
+#### 5.1 ril_event 数据结构
 hardware/ril/libril/ril_event.h
 ```
 // 定义指向 RIL 事件 Callback 回调函数的指针 ril_event_cb
@@ -309,3 +310,18 @@ struct ril_event {
     void *param;
 };
 ```
+#### 5.2 RIL 事件生命周期控制的处理函数
+ril_event_init 双向链表初始化
+ril_event_set 设置新创建 ril_event 时间参数
+ril_event_add 增加 event
+
+#### 5.3 ril_event_loop 处理机制
+LibRIL 运行环境加载过程中，最后会调用 ril_event_loop 函数，开始监听 RIL 事件。
+分为两步：
+1）增加 pending_list 双向链表中的 RIL 事件节点。processTimeouts 和 processReadReadies 两个函数都是将对应 RIL 事件增加到 pending_list 双向链表。
+2）调用 firePending 函数遍历 pending_list 双向链表获取 ril_event ，调用其 func 回调函数，完成对应 RIL 事件的回调。
+
+### 6. LibRIL 运行机制
+分为两个部分：
+1） RILJ 建立与 RIL 的 Socket 连接
+2） RILJ 向 RIL 发起 Solicited 消息的交互流程和处理机制。
