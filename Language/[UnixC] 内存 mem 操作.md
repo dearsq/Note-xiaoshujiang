@@ -1,5 +1,5 @@
 ---
-title: LinuxC中的mem操作
+title: [UnixC] 内存 mem 操作
 tags: Linux
 grammar_cjkRuby: true
 ---

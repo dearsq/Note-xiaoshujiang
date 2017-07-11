@@ -1,5 +1,5 @@
 ---
-title: i2c 与 spi 设备在新版内核中不采用DTS设备树形式 在驱动添加设备信息(board_info)的方法
+title: [Linux] i2c 与 spi 设备在新版内核中不采用DTS设备树形式 在驱动添加设备信息(board_info)的方法
 tags: Linux,dts
 grammar_cjkRuby: true
 ---

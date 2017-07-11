@@ -1,5 +1,5 @@
 ---
-title: DTS 架构下 Device 与 Driver 匹配流程
+title: [Linux] DTS 架构下 Device 与 Driver 匹配流程
 tags: Device Tree, dts,Linux,kernel
 grammar_cjkRuby: true
 ---

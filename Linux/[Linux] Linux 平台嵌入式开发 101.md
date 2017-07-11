@@ -1,5 +1,5 @@
 ---
-title: Linux 平台嵌入式开发 101
+title: [Linux] Linux 平台嵌入式开发 101
 tags: 
 grammar_cjkRuby: true
 ---

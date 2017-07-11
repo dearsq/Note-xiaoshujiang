@@ -1,5 +1,5 @@
 ---
-title: Linux 下的 SPI 设备驱动模型（SPI 协议基础）
+title: [Linux] 下的 SPI 设备驱动模型（SPI 协议基础）
 tags: SPI,Linux,Driver
 grammar_cjkRuby: true
 ---

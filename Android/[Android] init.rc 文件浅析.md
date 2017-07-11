@@ -1,5 +1,5 @@
 ---
-title: Android 中的 rc 文件
+title: [Android] init.rc 文件浅析
 tags: Android,rc
 grammar_cjkRuby: true
 ---

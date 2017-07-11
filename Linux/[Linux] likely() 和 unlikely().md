@@ -1,5 +1,5 @@
 ---
-title: Linux 中的 likely() 和 unlikely()
+title: [Linux] likely() 和 unlikely()
 tags: Linux
 grammar_cjkRuby: true
 ---

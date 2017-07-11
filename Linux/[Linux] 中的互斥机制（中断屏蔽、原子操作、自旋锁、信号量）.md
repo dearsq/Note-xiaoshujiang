@@ -1,5 +1,5 @@
 ---
-title: Linux 中的互斥机制（中断屏蔽、原子操作、自旋锁、信号量）
+title: [Linux] 中的互斥机制（中断屏蔽、原子操作、自旋锁、信号量）
 tags: Linux
 grammar_cjkRuby: true
 ---

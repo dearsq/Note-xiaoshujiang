@@ -1,5 +1,5 @@
 ---
-title: Android 中的 属性 property_get/property_set
+title: [Android] property_get 及 property_set 系统属性
 tags: Android
 grammar_cjkRuby: true
 ---

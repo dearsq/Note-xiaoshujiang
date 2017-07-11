@@ -1,6 +1,6 @@
 ---
-title: Android 智能指针 SP强指针WP弱指针 用法
-tags: Android,智能指针,C++
+title: [Android] 智能指针 SP强指针WP弱指针 用法
+tags: android,智能指针,C++
 grammar_cjkRuby: true
 ---
 这两天分析问题的时候看到了 sp< xxx > wp< xxx > 这样的类型定义。查阅资料后了解到这是 Android 中智能指针的用法。

@@ -1,5 +1,5 @@
 ---
-title: /etc/passwd 文件格式详解
+title: [Linux] passwd 文件格式详解
 tags: Linux
 grammar_cjkRuby: true
 ---

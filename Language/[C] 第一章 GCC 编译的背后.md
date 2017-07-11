@@ -1,5 +1,5 @@
 ---
-title: 《C 语言编程透视》第一章 GCC 编译的背后
+title: [C] 第一章 GCC 编译的背后
 tags: 
 grammar_cjkRuby: true
 ---

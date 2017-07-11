@@ -1,5 +1,5 @@
 ---
-title: Linux 内核的 /proc 文件系统
+title: [Linux] 内核的 proc 文件系统
 tags: Linux
 grammar_cjkRuby: true
 ---

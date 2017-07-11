@@ -1,5 +1,5 @@
 ---
-title: 以 SPI 驱动模型为例分析 Linux 主机驱动与外设驱动分离模型
+title: [Linux] 以 SPI 驱动模型为例分析 Linux 主机驱动与外设驱动分离模型
 tags: Linux,SPI,统一设备模型
 grammar_cjkRuby: true
 ---

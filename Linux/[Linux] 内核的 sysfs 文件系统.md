@@ -1,5 +1,5 @@
 ---
-title: Linux 内核的 sysfs 文件系统
+title: [Linux] 内核的 sysfs 文件系统
 tags: Linux,sysfs
 grammar_cjkRuby: true
 ---

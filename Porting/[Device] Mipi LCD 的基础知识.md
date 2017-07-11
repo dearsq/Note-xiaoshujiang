@@ -1,5 +1,5 @@
 ---
-title: Mipi LCD 的基础知识
+title: [Device] Mipi LCD 的基础知识
 tags: LCD
 grammar_cjkRuby: true
 ---

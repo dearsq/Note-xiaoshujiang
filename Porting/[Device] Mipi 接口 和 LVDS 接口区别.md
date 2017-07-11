@@ -1,5 +1,5 @@
 ---
-title: Mipi 接口 和 LVDS 接口区别
+title: [Device] Mipi 接口 和 LVDS 接口区别
 tags: MIPI,LVDS,DSI
 grammar_cjkRuby: true
 ---

@@ -1,5 +1,5 @@
 ---
-title: Linux 中的阻塞与非阻塞（等待队列、轮询）
+title: [Linux] 中的阻塞与非阻塞（等待队列、轮询）
 tags: Linux
 grammar_cjkRuby: true
 ---

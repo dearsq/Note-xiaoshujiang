@@ -1,5 +1,5 @@
 ---
-title: Linux 下的统一设备模型 
+title: [Linux] 统一设备模型
 tags: Linux,统一设备模型
 grammar_cjkRuby: true
 ---
