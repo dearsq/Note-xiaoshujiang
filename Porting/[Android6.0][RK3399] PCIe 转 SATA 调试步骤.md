@@ -29,6 +29,9 @@ Version: v2017.04
 
 ### mount
 调试 PCIe 转 SATA 设备，还需要在生成设备节点后将硬盘的设备节点挂载到我们系统的目录上。
+```
+mount -t ext3 /dev/block/sdb1 /mnt/Younix/
+```
 
 ## PCIe 调试步骤
 1. 在 menuconfig 中
