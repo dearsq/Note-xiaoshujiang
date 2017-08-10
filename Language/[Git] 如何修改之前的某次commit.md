@@ -41,3 +41,4 @@ git stash pop
 5. git add 将改动文件添加到暂存
 6. git commit --amend 追加改动到提交
 7. git rebase --continue 移动 HEAD 回最新的 commit
+
