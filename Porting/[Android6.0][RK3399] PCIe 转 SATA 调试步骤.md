@@ -73,3 +73,53 @@ sda
 sda1
 ```
 可以看到多出来了 sda 与 sda1，sda 即为 sata 硬盘，sda[n] 即为其分区号。
+
+
+## 问题汇总
+
+### PCIe 供电
+PCIe 供电没有打开的情况下，需要在 dts 添加 power supply：
+```
+index 4763727..677ed9d 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-sapphire.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399-sapphire.dtsi
+@@ -179,6 +179,17 @@
+                rockchip,pwm_id= <2>;
+                rockchip,pwm_voltage = <1000000>;
+        };
++
++  vcc3v3_3g: vcc3v3-3g-regulator {
++    compatible = "regulator-fixed";
++    enable-active-high;
++    regulator-always-on;
++    regulator-boot-on;
++    gpio = <&gpio0 2 GPIO_ACTIVE_HIGH>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&pcie_3g_drv>;
++    regulator-name = "vcc3v3_3g";
++  };
+ };
+ 
+ &cpu_l0 {
+@@ -511,6 +522,7 @@
+        num-lanes = <4>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pcie_clkreqn>;
++  phy-supply = <&vcc3v3_3g>;
+        status = "okay";
+ };
+ 
+@@ -658,6 +670,14 @@
+ };
+ 
+ &pinctrl {
++
++  pcie {
++  pcie_3g_drv: pcie-3g-drv {
++    rockchip,pins =
++      <0 2 RK_FUNC_GPIO &pcfg_pull_up>;
++    };
++  };
++  
+
+```
