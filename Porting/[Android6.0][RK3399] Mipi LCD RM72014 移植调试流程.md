@@ -463,12 +463,36 @@ driver/video/rockchip/screen/lcd_mipi.c 中的:
 	#define MIPI_SCREEN_DBG(x...) printk(KERN_ERR x)
 ```
 看看 log 中是否有异常。
-譬如 probe 函数是否正常;
+
+譬如 
+probe 函数是否正常;
 是否有调用到 rk32_dsi_enable() 函数,该函数为 lcdc 调用 mipi 的入口函数;
 初始化 mipi 的过程中是否有报错等等
 
 电源控制部分对应的操作函数:driver/video/rockchip/screen/lcd_mipi.c 的
 rk_mipi_screen_pwr_enable(),rk_mipi_screen_pwr_disable()。
+
+Clock 部分在 drivers/video/rockchip/transmitter/rk32_mipi_dsi.c 可以添加如下打印
+```c
+ 256 static int rk312x_mipi_dsi_phy_set_gotp(struct dsi *dsi, u32 offset, int n)
+ 257 {
+ 258     u32 val = 0, temp = 0, Tlpx = 0;
+ 259     u32 ddr_clk = dsi->phy.ddr_clk;
+ 260     u32 Ttxbyte_clk = dsi->phy.Ttxbyte_clk;
+ 261     u32 Tsys_clk = dsi->phy.Tsys_clk;
+ 262     u32 Ttxclkesc = dsi->phy.Ttxclkesc;
+ 263     printk("%s : ddr_clk %d\n", __func__, ddr_clk);
+ 
+1123 static int rk32_mipi_dsi_enable_hs_clk(void *arg, u32 enable)
+1124 {
+1125     struct dsi *dsi = arg;
+1126     printk("rk32_mipi_dsi_enable_hs_clk,enable=%d\n",enable);
+1127     rk32_dsi_set_bits(dsi, enable, phy_txrequestclkhs);
+1128     return 0;
+1129 }
+```
+
+dts 中也有一些 Debug 的开关可以打开以协助分析问题。RK 手册中会有更加详细的描述，这里不赘述了。
 
 ### 5.5 上电时序是否正常
 根据前面我们从 datasheet 中扣出来的上电时序图，确认上电时序是否正常，VCC、RST、MIPI 顺序是否正常。
