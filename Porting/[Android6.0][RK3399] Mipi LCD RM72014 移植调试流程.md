@@ -597,7 +597,11 @@ RST 后下载初始化时序时间过长，适当减少 delay 时间可以解决
 寄存器没有使能外部升压电路
 
 ### 6.17 水波纹
-通常都是rgb interface polarity導致，需要調整pclk hsync vsync de極性使之符合平台極性
+通常都是rgb interface polarity導致，需要調整pclk hsync vsync de極性使之符合平台極性。
+这是网上的一个建议。
+我自己碰到的一次出现水波纹的原因是 VCOM 不对。在屏厂帮助下，在 init cmds 里面添加关于 VCOM 的调试参数解决。
+水波纹一般是 VCOM 的问题。出现水波纹首先可以确保电源和背光部分VDD/AVDD/VGL/VGH纹波足够小,确保VCOM波形正确,VCOM电路端的电源稳定;确保 LCD 周边外围电路的电容、电阻电压是否干净。
+
 
 ### 6.18 调节对比度
 
@@ -609,6 +613,16 @@ VRL、VRH、VDV和VCM，这些电压也可以用来调节亮暗（对比度）
 可能时钟型号极性反了 
 可能 VCOM 调节不正常 
 进行 GAMMA 校正
+
+### 6.20 明暗色过渡部分，出现不停闪动的亮点
+pixel clock 极性，由上升沿采样改为下降沿采样即可。
+
+
+最后，我上面说的都是废话。
+最好的资料就是 RK 官方的TRM 、屏的 Spec 和  Mipi DSI 协议规格书。
+LCD 这边的变数太多了，一万个工程师可以碰到一万种屏不显示的情况。
+网上搜再多资料也没有抓波、抓上电时序，对照官方手册确认 来的实在。
+
 
 本文地址：http://blog.csdn.net/dearsq/article/details/77341120
 作者 Younix，欢迎转载，转载请著名出处，谢谢。
