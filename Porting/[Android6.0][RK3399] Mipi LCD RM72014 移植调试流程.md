@@ -62,6 +62,16 @@ VSync = 4
 Pixel Clock Frequency（Pclk）= 74.88MHZ
 
 这里我们详细说一下各个参数的含义，这个对我们后续调屏会非常有帮助。
+更加详细全面的参见 NXP 的一份资料：[graphics.lcd.technologies.pdf](https://www.google.com.hk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0ahUKEwjZl_bg3enVAhWEabwKHRZQBXoQFgglMAA&url=http://www.nxp.com/wcm_documents/techzones/microcontrollers-techzone/Presentations/graphics.lcd.technologies.pdf&usg=AFQjCNGFGpzekTWXPggcjcWrWuLUDcdKGQ)
+
+说白了核心思想就是下面这张图：
+
+![](http://ww1.sinaimg.cn/large/ba061518gy1fimt123xehj20s10ggjrn.jpg)
+
+Horizontal 代表水平方向，HBP 行同步信号后肩 、HFP 行同步信号前肩，单位是 clocks，什么 clock ？pclk （pixel clock frequence），像素时钟频率，也就是我们在 dts 中填充的 clock-frequence 这个参数。
+Vertical 代表垂直方向，VBP 帧同步信号后肩、VFPP 帧同步信号前肩，单位是 lines。
+
+
 另外根据以上的信息，我们还能计算出 Mipi Dsi Clock 。
 **DCLK**  = 100 + H_total×V_total × fps × 3 × 8 / lanes_nums
 **total** 这里指的是 sync + front + back + active
@@ -76,9 +86,6 @@ DCLK
 = 100 + ( 800 + 21 + 132 + 4 ) x ( 1280 + 8 + 8 + 4 ) x 60 帧 x 3 字节 x 8 bit / 4 lanes
 = 100Mbps + 449Mbps = 549 Mbps
 
-重点看下面这张图，
-
-![](http://ww1.sinaimg.cn/large/ba061518gy1fimt123xehj20s10ggjrn.jpg)
 
 ## 二、根据屏参 和 硬件设计填写 dts
 
