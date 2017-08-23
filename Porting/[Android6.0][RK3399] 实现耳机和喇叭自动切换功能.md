@@ -25,9 +25,9 @@ HP_DET_H 为耳机状态检测脚。
 
 SPK_CTL_H 为控制 Speaker 使能管脚。
 
-所以整个的逻辑很简单即 
-
 ![](http://ww1.sinaimg.cn/large/ba061518gy1fisse40sdcj20yl0elgnl.jpg)
+
+所以整个的逻辑很简单即 
 
 HP_DET_H 检测耳机状态 
 ————> 为高  耳机插入，拉底 SPK_CTL_H 禁能喇叭
