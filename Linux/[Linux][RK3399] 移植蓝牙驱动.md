@@ -4,6 +4,8 @@ tags: bluetooth,rockchip
 grammar_cjkRuby: true
 ---
 
+
+参考文章：http://blog.csdn.net/linuxheik/article/details/51924026
 [TOC]
 
 ## 内核配置
