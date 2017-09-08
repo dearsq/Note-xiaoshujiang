@@ -68,6 +68,9 @@ sudo /etc/init.d/networking restart
 
 图形界面用到的情况不多，就不赘述了。
 
+更加有详细的配置方法参见这篇文章
+http://blog.sina.com.cn/s/blog_722e57150100nhz9.html
+
 ## 调试步骤
 
 参考 https://technet.microsoft.com/en-us/library/cc940095.aspx
