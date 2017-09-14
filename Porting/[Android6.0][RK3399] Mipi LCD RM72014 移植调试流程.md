@@ -1,8 +1,3 @@
----
-title: [Android6.0][RK3399] Mipi LCD 通用移植调试流程
-tags: mipi,lcd,rockchip,android
-grammar_cjkRuby: true
----
 
 
 [TOC]
@@ -13,6 +8,8 @@ grammar_cjkRuby: true
 索性再次重新梳理一下，也许会有别样的收获吧。
 没有看过那篇文章的同学也不需要再看了，这篇文章会更加全面的描述和分析调试流程。
 这次文章以 RM72014 这颗 Driver IC 为例，从 RK Mipi LCD 代码分析 到 屏的公式计算 再到实践中的问题都会涉及，**调试为主，分析为辅**，比较冗长，大家可以挑选自己需要的部分来看。
+随着我碰到的情况更多，本文也将不断更新。
+也欢迎大家留言分享交流自己碰到的情况和解决方案。
 
 本文地址：http://blog.csdn.net/dearsq/article/details/77341120
 作者 Younix，欢迎转载，转载请著名出处，谢谢。
@@ -71,7 +68,6 @@ Pixel Clock Frequency（Pclk）= 74.88MHZ
 Horizontal 代表水平方向，HBP 行同步信号后肩 、HFP 行同步信号前肩，单位是 clocks，什么 clock ？pclk （pixel clock frequence），像素时钟频率，也就是我们在 dts 中填充的 clock-frequence 这个参数。
 Vertical 代表垂直方向，VBP 帧同步信号后肩、VFPP 帧同步信号前肩，单位是 lines。
 
-
 另外根据以上的信息，我们还能计算出 Mipi Dsi Clock 。
 **DCLK**  = 100 + H_total×V_total × fps × 3 × 8 / lanes_nums
 **total** 这里指的是 sync + front + back + active
@@ -85,6 +81,7 @@ DCLK
 = 100Mbps + H_Total × V_Total x fps x 3 x 8 / lanes_nums 
 = 100 + ( 800 + 21 + 132 + 4 ) x ( 1280 + 8 + 8 + 4 ) x 60 帧 x 3 字节 x 8 bit / 4 lanes
 = 100Mbps + 449Mbps = 549 Mbps
+
 
 
 ## 二、根据屏参 和 硬件设计填写 dts
@@ -502,7 +499,11 @@ Clock 部分在 drivers/video/rockchip/transmitter/rk32_mipi_dsi.c 可以添加�
 dts 中也有一些 Debug 的开关可以打开以协助分析问题。RK 手册中会有更加详细的描述，这里不赘述了。
 
 ### 5.5 上电时序是否正常
-根据前面我们从 datasheet 中扣出来的上电时序图，确认上电时序是否正常，VCC、RST、MIPI 顺序是否正常。
+根据前面我们从 datasheet 中扣出来的上电时序图
+
+![](http://ww1.sinaimg.cn/large/ba061518gy1fimsjacg20j20jk0h70u5.jpg)
+
+确认上电时序是否正常，VCC、RST、MIPI 顺序是否正常。
 1. VCC 使能有没有起作用。
 2. RST 是否有一个 低-高 的变化，没有则是 rst 设置的触发方式可能反了 
 3. 在 RST 变高后会开始传输数据，量 lanes 是否有数据输出。抓取数据需要一定规格的示波器和差分探头，我们用普通的示波器大致看看有没有数据输出就够了。
@@ -517,6 +518,15 @@ dts 中也有一些 Debug 的开关可以打开以协助分析问题。RK 手册
 
 ### 5.7 可以显示了但是 花屏/闪屏/抖动 等
 见后面的问题集锦
+
+### 5.8 进一步分析 Mipi 协议
+屏参、上电时序、clock 啥都确定是对的了。竟然还是无法点亮屏幕。
+最后只能分析协议。
+这是网友 @nice 碰到的问题。
+最后发现是 LP00 的时间不对，RK 平台默认是 85ms，但是屏要求是 15ms。修改后正常。
+参考文章：http://blog.csdn.net/g_salamander/article/details/9163455
+我就不重复造轮子了。上面这篇文章写的非常好。等什么时候我有更深的感悟了也写一篇包含自己体会的 Mipi 协议分析博客好了。
+
 
 ## 六、问题集锦
 
@@ -628,11 +638,7 @@ RST 后下载初始化时序时间过长，适当减少 delay 时间可以解决
 寄存器没有使能外部升压电路
 
 ### 6.17 水波纹
-通常都是rgb interface polarity導致，需要調整pclk hsync vsync de極性使之符合平台極性。
-这是网上的一个建议。
-我自己碰到的一次出现水波纹的原因是 VCOM 不对。在屏厂帮助下，在 init cmds 里面添加关于 VCOM 的调试参数解决。
-水波纹一般是 VCOM 的问题。出现水波纹首先可以确保电源和背光部分VDD/AVDD/VGL/VGH纹波足够小,确保VCOM波形正确,VCOM电路端的电源稳定;确保 LCD 周边外围电路的电容、电阻电压是否干净。
-
+通常都是rgb interface polarity導致，需要調整pclk hsync vsync de極性使之符合平台極性
 
 ### 6.18 调节对比度
 
@@ -647,6 +653,7 @@ VRL、VRH、VDV和VCM，这些电压也可以用来调节亮暗（对比度）
 
 ### 6.20 明暗色过渡部分，出现不停闪动的亮点
 pixel clock 极性，由上升沿采样改为下降沿采样即可。
+
 
 
 最后，我上面说的都是废话。
