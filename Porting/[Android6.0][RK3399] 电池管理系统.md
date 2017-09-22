@@ -4,12 +4,28 @@ tags: rockchip,powermanager
 grammar_cjkRuby: true
 ---
 
+
+[TOC]
+
 本文是对 wowotech.net 上讲解电源管理系统系列相关文章的学习笔记。
 原文地址 http://www.wowotech.net/pm_subsystem/pm_architecture.html
 
-## 一、架构组成
+## 一、基本概念
 
-电源管理（Power Management）在Linux Kernel中，是一个比较庞大的子系统，涉及到供电（Power Supply）、充电（Charger）、时钟（Clock）、频率（Frequency）、电压（Voltage）、睡眠/唤醒（Suspend/Resume）等方方面面。
+**电源管理**（Power Management）在Linux Kernel中，是一个比较庞大的子系统，涉及到供电（Power Supply）、充电（Charger）、时钟（Clock）、频率（Frequency）、电压（Voltage）、睡眠/唤醒（Suspend/Resume）等方方面面。
+
+### 1.1 Hibernate（冬眠）和Sleep（睡眠）
+是Linux电源管理在用户角度的抽象，是用户可以看到的实实在在的东西。它们的共同点，是保存系统运行的上下文后挂起（suspend）系统，并在系统恢复后接着运行，就像什么事情都没有发生一样。它们的不同点，是上下文保存的位置、系统恢复的触发方式以及具体的实现机制。
+### 1.2 Suspend
+有两个层次的含义。一是Hibernate和Sleep功能在底层实现上的统称，都是指挂起（Suspend）系统，根据上下文的保存位置，可以分为Suspend to Disk（STD，即Hibernate，上下文保存在硬盘/磁盘中）和Suspend to RAM（STR，为Sleep的一种，上下文保存在RAM中）；二是Sleep功能在代码级的实现，表现为“kernel/power/suspend.c”文件。
+### 1.3 Standby
+是Sleep功能的一个特例，可以翻译为“打盹”。
+正常的Sleep（STR），会在处理完上下文后，由arch-dependent代码将CPU置为低功耗状态（通常为Sleep）。而现实中，根据对功耗和睡眠唤醒时间的不同需求，CPU可能会提供多种低功耗状态，如除Sleep之外，会提供Standby状态，该状态下，CPU处于浅睡眠模式，有任何的风吹草动，就会立即醒来。
+### 1.4 Wakeup
+这是我们第一次正式的提出Wakeup的概念。我们多次提到恢复系统，其实在内核中称为Wakeup。表面上，wakeup很简单，无论是冬眠、睡眠还是打盹，总得有一个刺激让我们回到正常状态。但复杂的就是，什么样的刺激才能让我们醒来？
+动物界，温度回升可能是唯一可以让动物从冬眠状态醒来的刺激。而踢一脚、闹钟响等刺激，则可以让我们从睡眠状态唤醒。对于打盹来说，则任何的风吹草动，都可以唤醒。
+而在计算机界，冬眠（Hibernate）时，会关闭整个系统的供电，因此想醒来，唯有Power按钮可用。而睡眠时，为了缩短Wakeup时间，并不会关闭所有的供电，另外，为了较好的用户体验，通常会保留某些重要设备的供电（如键盘），那样这些设备就可以唤醒系统。
+这些刻意保留下来的、可以唤醒系统的设备，统称为唤醒源（Wakeup source）。而Wakeup source的选择，则是PM设计工作（特别是Sleep、Standby等功能）的重点。
 
 
 ## 二、Generic PM
@@ -213,3 +229,17 @@ dpm_resume、dpm_complete、dpm_resume_start、dpm_resume_end，是电源管理�
 
 Hibernate和Sleep两个功能是Linux Generic PM的核心功能，它们的目的是类似的：
 暂停使用——>保存上下文——>关闭系统以节电········>恢复系统——>恢复上下文——>继续使用
+
+
+### 3.1 软件架构
+
+![](http://www.wowotech.net/content/uploadfile/201406/7c4055529e1ae140ce2573ef7de42bfd20140610081115.gif)
+
+**API Layer** 描述用户空间 API 的一个抽象层。
+**PM Core** 电源管理的核心逻辑层。包括：
+主功能，负责 global APIs 相关逻辑，为用户空间提供 API
+STD，包括hibernate、snapshot、swap、block_io等子模块，负责实现STD功能和硬件无关的逻辑
+STR&Stanby，包括suspend和suspend_test两个子模块，负责实现STR、Standby等功能和硬件无关的逻辑
+**PM Driver** 电源管理驱动层，涉及体系结构无关驱动、体系结构有关驱动、设备模型以及各个设备驱动等多个软件模块
+
+### 3.2 用户空间接口
