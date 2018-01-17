@@ -1,5 +1,5 @@
 ---
-title: [Ubuntu] 在终端中利用Wget下载百度云资源
+title: [Ubuntu] 在终端中利用Wget/aria2下载百度云资源
 tags: Ubuntu
 grammar_cjkRuby: true
 ---
@@ -12,6 +12,8 @@ Tools: Baiduyun、Wget
 Linux 下暂时没有好用的 百度云应用。
 利用 Chrome 浏览器直接下载百度云大文件不支持断点续传，一旦失败就要重头开始下。
 所以考虑采用 Wget 来下载资源。
+
+another way is using BaiduExporter + aria2, Verrrrrrrry Good.
 
 ## 步骤
 
@@ -57,3 +59,10 @@ wget -c --referer=https://pan.baidu.com/s/1jIhvmrc -O windows7_64.iso "https://d
   [1]: http://wx2.sinaimg.cn/large/ba061518ly1fghf06y4nlj20jw03lweu.jpg
   [2]: http://wx1.sinaimg.cn/large/ba061518ly1fghf00bd99j20i204c74d.jpg
   [3]: http://wx2.sinaimg.cn/large/ba061518ly1fghf5m8644j20za0dadod.jpg
+
+
+
+## BaiduExporter + aria2
+useage: 
+https://blog.icehoney.me/posts/2015-01-31-Aria2-download
+https://github.com/acgotaku/BaiduExporter
