@@ -67,10 +67,23 @@ useage:
 https://blog.icehoney.me/posts/2015-01-31-Aria2-download
 https://github.com/acgotaku/BaiduExporter
 
+```bash
+$ sudo apt install aria2
+$ git clone https://github.com/acgotaku/BaiduExporter.git
 ```
-sudo apt install aria2
-git clone https://github.com/acgotaku/BaiduExporter.git
-cd BaiduExporter
-aria2c --conf-path=/home/younix/WorkTools/BaiduExporter/aria2c/aria2.conf
+```bash
+# modified config file 
+$ vi BaiduExporter/aria2c/aria2.conf
 
+#文件保存路径, 默认为当前启动位置
+-- dir=D:\Downloads
+++ dir=/home/younix/Downloads/Baiduyun/
 ```
+```bash
+# point config file which you want to use
+$ aria2c --conf-path=/home/younix/WorkTools/BaiduExporter/aria2c/aria2.conf
+```
+
+Open BaiduyunWebsite and click " 导出下载" 
+
+done.
