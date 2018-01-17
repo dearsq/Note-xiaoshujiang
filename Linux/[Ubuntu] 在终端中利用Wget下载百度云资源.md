@@ -66,3 +66,11 @@ wget -c --referer=https://pan.baidu.com/s/1jIhvmrc -O windows7_64.iso "https://d
 useage: 
 https://blog.icehoney.me/posts/2015-01-31-Aria2-download
 https://github.com/acgotaku/BaiduExporter
+
+```
+sudo apt install aria2
+git clone https://github.com/acgotaku/BaiduExporter.git
+cd BaiduExporter
+aria2c --conf-path=/home/younix/WorkTools/BaiduExporter/aria2c/aria2.conf
+
+```
