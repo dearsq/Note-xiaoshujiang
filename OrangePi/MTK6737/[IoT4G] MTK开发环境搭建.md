@@ -14,8 +14,15 @@ Kernel: Linux 3.4.67
 2>ubuntu < 12.04
 ```
 sudo apt-get install git-core gnupg flex bison ccache gperf libsdl1.2-dev libesd0-dev libwxgtk2.6-dev build-essential zip curl libncurses5-dev zlib1g-dev valgrind libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev lib32readline-gplv2-dev lib32z1-dev libgl1-mesa-dev gcc-4.4 g++-4.4 g++-4.4-multilib g++-multilib mingw32 tofrodos python-markdown libxml2-utils xsltproc wine
-
+```
 3>ubuntu = 14.04
+```
+sudo apt-get install git-core gnupg flex bison ccache gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev build-essential zip curl libncurses5-dev zlib1g-dev valgrind libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev lib32readline-gplv2-dev lib32z1-dev libgl1-mesa-dev g++-multilib g++-4.8-multilib mingw32 tofrodos python-markdown libxml2-utils xsltproc libc6-dev-i386 lib32z1 lib32ncurses5 lib32bz2-1.0 lib32readline-gplv2-dev wine
+```
+安装无问题
+
+ubuntu = 16.04
+```
 sudo apt-get install git-core gnupg flex bison ccache gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev build-essential zip curl libncurses5-dev zlib1g-dev valgrind libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev lib32readline-gplv2-dev lib32z1-dev libgl1-mesa-dev g++-multilib g++-4.8-multilib mingw32 tofrodos python-markdown libxml2-utils xsltproc libc6-dev-i386 lib32z1 lib32ncurses5 lib32bz2-1.0 lib32readline-gplv2-dev wine
 ```
 报错有如下无法定位：
@@ -183,19 +190,9 @@ target StaticLib: libcam.device3.base (out/target/product/bd6737m_35g_b_m0/obj/S
 ```
 可以参考 安装编译环境依赖包 进行安装必要的包
 
-```
-target Pack Relocations: libblas (out/target/product/bd6737m_35g_b_m0/obj/SHARE$
-_LIBRARIES/libblas_intermediates/PACKED/libblas.so)
-target Symbolic: libc_malloc_debug_qemu (out/target/product/bd6737m_35g_b_m0/sym
-bols/system/lib/libc_malloc_debug_qemu.so)
-INFO: Compaction                 : 0 bytes
-INFO: Too few relocations to pack after alignment
-preparing StaticLib: libcam.camadapter.scenario.shot [including out/target/produ
-ct/bd6737m_35g_b_m0/obj/STATIC_LIBRARIES/libcam.camadapter.scenario.shot.normals
-hot_intermediates/libcam.camadapter.scenario.shot.normalshot.a]
-make: *** No rule to make target 'out/target/product/bd6737m_35g_b_m0/obj/STATIC
-_LIBRARIES/libcam.halmemory_intermediates/export_includes', needed by 'out/targe
-t/product/bd6737m_35g_b_m0/obj/SHARED_LIBRARIES/libcam_platform_intermediates/im
-port_includes'。 停止。
-make: *** 正在等待未完成的任务....
-```
+
+## 烧录
+
+Linux 下的烧录工具为 SP_Flash_Tool_v5.1644_Linux.zip
+使用方法：http://spflashtools.com/linux/sp-flash-tool-v5-1644-linux
+
