@@ -38,3 +38,7 @@ Hardware:MTK6737
 负责 Framework 初始化等。
 
 ![](http://ww1.sinaimg.cn/large/ba061518ly1fnqiixhnp3j20gs0bfjts.jpg)
+
+
+以上基本可以化为三个部分：Bootloader（Preloader+LK）、Kernel、Android。
+后面我们深入代码逐个分析。
