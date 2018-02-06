@@ -261,3 +261,55 @@ static int bootstrap2(void *arg)
 
 ```
 
+
+apps_init  //\bootable\bootloader\lk\app\app.c
+start_app
+mt_boot_init //bootable\bootloader\lk\app\mt_boot\mt_boot.c
+  如果 g_boot_mode 为 FASTBOOT 就走 fastboot 模式
+  否则 boot_linux_from_storage()
+
+boot_linux_from_storage() 是关键
+char g_CMDLINE[200] = COMMANDLINE_TO_KERNEL;
+
+这个 COMMANDLINE_TO_KERNEL 定义在 \lk\include\platform\mt_reg_base.h
+
+
+## 三、Linux 内核启动
+Linux 内核启动一般由外部 bootloader 引导，也可以在头部嵌入一个 loader，这部分和硬件结合紧密，一般由汇编编写。
+
+### 3.1 zImage 解压
+内核 zImage 解压缩
+head.S 首先初始化自解压相关的如内存等环境，接下来调用 decompress_kernel 进行解压（./arch/arm/boot/compressed/misc.c)
+
+### 3.2 start_kernel 启动
+start_kernel 启动内核（./init/main.c)
+start_kernel 是任何版本 Linux 内核的通用初始化函数，它会初始化很多东西，输出 Linux 版本信息、设置体系结构相关的环境，页表结构初始化，设置系统自陷入口，初始化系统 IRQ，初始化核心调度器等。
+最后调用 rest_init
+
+### 3.3 rest_init 调用 kernel_init
+启动 init 进程
+执行 schedule  开始任务调度。这个 init 是由 android 的 ./system/core/init 下的代码编译出来的，由此进入了 android 代码。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
