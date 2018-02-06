@@ -9,30 +9,30 @@ Hardware:MTK6737
 
 [TOC]
 
-## 启动流程概览
+## 一、启动流程概览
 
-### BootRom
+### 1. BootRom
 固化在 CPU 内部。
 负责从外部的存储器中加载 Preloader。
 负责 USB Download。
 
-### Preloader
+### 2. Preloader
 属于 Bootloader 的第一部分。
 负责 MTK Licensed
 负责 基础 Module 的 初始化，比如 eMMC，PLL，DRAM 等。
 负责 加载 LittleKernel（LK）
 
-### LK
+### 3. LK
 属于 Bootloader 的第二部分。
 负责 设备的初始化。
 负责 加载 Linux Kernel。
 支持 fastboot 更新。
 
-### Kernel
+### 4. Kernel
 负责 设备初始化 / 内核初始化。
 负责 引导启动内核态 init 进程。
 
-### Android
+### 5. Android
 负责 引导启动用户态 init 进程。
 负责 Zygote 启动。
 负责 Framework 初始化等。
@@ -43,7 +43,7 @@ Hardware:MTK6737
 以上基本可以化为三个部分：Bootloader（Preloader+LK）、Kernel、Android。
 后面我们深入代码逐个分析。
 
-## Bootloader 引导
+## 二、Bootloader 引导
 Bootloader 部分主要功能包括 设置处理器和内存频率、指定调试信息端口、可引导的存储设备等。完成可执行环境创建后，把 software 装载到内存并执行。除了装载 software ，外部工具也可以和 bootloader 握手，指示设备进入不同的操作模式（比如 USB 下载模式和 META 模式）。就算没有外部工具的握手，也可以通过自定义按键，使 bootloader 进入这些模式。
 
 由于不同芯片商对 arm core 封装差异比较大，所以不同的 arm 处理器,对于上电引导都是由特定处理器芯片厂商自己开发的程序,这个上电引导程序通常比较简单,会初始化硬件,提供下载模式等,然后才会加载通常的 bootloader （uboot）。
@@ -64,8 +64,8 @@ Bootloader 部分主要功能包括 设置处理器和内存频率、指定调�
 7. u-boot 从存储器中加载引导镜像（boot image）包括 linux kernel 和 ramdisk
 8. u-boot 跳转到 linux kernel 并执行。
 
-### preloader 启动过程
-#### preloader 的功能
+### 2.1 preloader 启动过程
+#### 2.1.1 preloader 的功能
 1. 负责在芯片组平台准备好可执行环境
 2. 如果检测到外部工具，会试图通过 uart 或者 usb 与外部工具握手
 3. 从 NAND/EMMC 加载 u-boot ，并跳转到 u-boot
@@ -100,17 +100,17 @@ RTC alarm 可能是设备开机的启动源，这种情况，设备不需要按 
 
 **MSDC**
 pre-loader 可以从 NAND Flash 或者是 EMMC 中加载 u-boot，两种选其一
-#### preloader 启动代码
+#### 2.1.2 preloader 启动代码
 代码流程如下图：
 
 ![](http://ww1.sinaimg.cn/large/ba061518ly1fo1wuezzjxj20mv0l8wk5.jpg)
 
 
-### LK 启动过程
+### 2.2 LK 启动过程
 LK （Little Kernel）也是一种 bootloader ，作用和 u-boot 差不多。
 MTK它由 preloader 引导并执行，因为 preloader 中已经完成了硬件模块，所以不需要在 lk 中重新配置这些模块了。但部分模块会在 lk 中重新被复位来配置硬件寄存器，这样可以创造一个干净的环境。比如计时器模块，在 lk 中，timer 被重新复位清零硬件计数来对计时进行复位。
 
-#### LK 中的上电情景
+#### 2.2.1 LK 中的上电情景
 LK 加载后，电池将检查 power 按键是否按下，
 如果当前启动的原因是 USB 充电器，而不是 power 按键，电池模块将等待用户按下 power 按键启动;
 ```
@@ -119,11 +119,11 @@ BOOL mtk_detect_key(unsigned short key)  /* key: HW KeyCode */
 ```
 `key` 表示要检查的按键码，返回值表示这个按键是否按下，此函数来判断指定的按键是否按下。
 
-#### LK 中的充电情景
+#### 2.2.2 LK 中的充电情景
 
 ![](http://ww1.sinaimg.cn/large/ba061518ly1fo227amhrrj20tv0mgakl.jpg)
 
-#### LK 中的其他启动模式
+#### 2.2.3 LK 中的其他启动模式
 **Factory mode**
 出厂模式，用于批量生产
 
@@ -149,7 +149,7 @@ RTC 闹钟启动
 **sw reboot**
 启动原因是重启
 
-#### LK 启动代码
+#### 2.2.4 LK 启动代码
 代码流程如下图：
 
 ![](http://ww1.sinaimg.cn/large/ba061518ly1fo1y6bd3wrj20pq0mcn2k.jpg)
@@ -175,17 +175,17 @@ void kmain(void)
         thread_init_early();
 
         // early arch stuff
-        arch_early_init();
+        arch_early_init();  // 使能 MMU、cache
 
         // do any super early platform initialization
-        platform_early_init();
+        platform_early_init();  // 使能 Uart、中断、定时器、DRAM Banks、wot、display
 
 #if defined(MACH_FPGA) || defined(SB_LK_BRINGUP)
         boot_time = get_timer(0);
 #endif
 
         // do any super early target initialization
-        target_early_init();
+        target_early_init(); // 空，可以在这里实现一些定制的超级初始化
 
         dprintf(INFO, "welcome to lk\n\n");
 
@@ -228,13 +228,14 @@ void kmain(void)
 #endif
 }
 ```
+
 这里会创建一个 bootstrap2 线程
 ```c
 static int bootstrap2(void *arg)
 {
         dprintf(SPEW, "top of bootstrap2()\n");
 
-        arch_init();
+        arch_init(); // 空
 
         // XXX put this somewhere else
 #if WITH_LIB_BIO
@@ -246,11 +247,11 @@ static int bootstrap2(void *arg)
 
         // initialize the rest of the platform
         dprintf(SPEW, "initializing platform\n");
-        platform_init();
+        platform_init(); // 启动模式选择电池、显示 Logo、背光打开、设置软件的环境变量
 
         // initialize the target
         dprintf(SPEW, "initializing target\n");
-        target_init();
+        target_init(); // 空
 
         dprintf(SPEW, "calling apps_init()\n");
         apps_init();
@@ -259,3 +260,4 @@ static int bootstrap2(void *arg)
 }
 
 ```
+
