@@ -8,7 +8,7 @@ grammar_cjkRuby: true
 
 RK 的文档中有说到 其 Uboot 是给予 2014.10 官方版本进行开发的，同步更新了主分支的一些关键性更新。
 
-## Uboot 的编译
+## 一、Uboot 的编译
 编译 Uboot 我们所采用的命令如下：
 ```
 make rk3399_defconfig
@@ -146,7 +146,7 @@ CROSS_COMPILE   ?= $(shell pwd)/../prebuilts/gcc/linux-x86/aarch64/aarch64-linux
 endif
 ```
 
-## Uboot 目录结构
+## 二、Uboot 目录结构
 ```
 include/configs/rk_default_config.h: 
 rk平台公共配置，默认打开所有需要的功能
@@ -167,4 +167,27 @@ drivers:
 各种接口驱动文件，如lcd, rtc, spi, i2c,usb等驱动。
 ```
 
-## Uboot 
+## 三、RK 平台 Uboot 	生成方式
+RK Uboot 有两种生成方式。参看 RK wiki。
+一种是 Uboot 作 first level bootloader，比如原来的 RK3288 平台，这种情况下，uboot 生成的固件为单独的 .bin 文件， RK3288UbootLoader_V2.30.10.bin 。
+另一种是 Uboot 作为 second level bootloader，比如 RK3399 平台，这种情况下，uboot 生成的固件为 .img，比如 uboot.img。
+
+在 Uboot 的代码中，configs/rk3399_defconfig 中有定义
+```
+CONFIG_SYS_EXTRA_OPTIONS="RKCHIP_RK3399,PRODUCT_MID,NORMAL_WORLD,SECOND_LEVEL_BOOTLOADER,BAUDRATE=1500000"
+```
+我们可以通过设置 CMDLINE 中的 CONFIG_SECOND_LEVEL_BOOTLOADER 宏来控制是否将其作为 second level bootloader。
+CONFIG_SECOND_LEVEL_BOOTLOADER 会打开 CONFIG_MERGER_MINILOADER 宏。
+它控制的功能是合并 MINIALL.ini 配置文件（tools/rk_tools/RKBOOT/RK3399MINIALL.ini ）与 miniloader.bin（tools/rk_tools/bin/rk33/rk3399_miniloader_v1.06.bin ），最终输出为 rk3399_loader_v1.08.106.bin。
+代码逻辑如下：
+```
+ifdef CONFIG_SECOND_LEVEL_BOOTLOADER
+    $(if $(CONFIG_MERGER_MINILOADER), ./tools/boot_merger ./tools/rk_tools/RKBOOT/$(RKCHIP)MINIALL.ini &&) \
+    $(if $(CONFIG_MERGER_TRUSTIMAGE), ./tools/trust_merger $(if $(CONFIG_RK_TRUSTOS), --subfix) \
+                            ./tools/rk_tools/RKTRUST/$(RKCHIP)TRUST.ini &&) \
+    $(if $(CONFIG_MERGER_TRUSTOS), ./tools/loaderimage --pack --trustos $(RK_TOS_BIN) trust.img &&) \
+    ./tools/loaderimage --pack --uboot u-boot.bin uboot.img
+else
+    ./tools/boot_merger --subfix "$(RK_SUBFIX)" ./tools/rk_tools/RKBOOT/$(RKCHIP).ini
+endif # CONFIG_SECOND_LEVEL_BOOTLOADER
+```
