@@ -4,6 +4,12 @@ tags:
 grammar_cjkRuby: true
 ---
 
+Author: Younix 
+Platform: RK3399 
+OS: Android 6.0 
+Kernel: 4.4 
+Version: v2017.07
+
 [TOC]
 
 RK 的文档中有说到 其 Uboot 是给予 2014.10 官方版本进行开发的，同步更新了主分支的一些关键性更新。
