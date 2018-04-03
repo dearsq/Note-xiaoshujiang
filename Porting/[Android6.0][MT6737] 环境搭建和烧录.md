@@ -43,8 +43,12 @@ make update-api
 make -j8 # 重新编译
 ```
 
-如果仍然报错，那么回退上述的所有修改，修改 build/core/clang/HOST_x86_common.mk：
+如果仍然有如下报错：
 ```
+```
+
+那么回退上述的所有修改，修改 build/core/clang/HOST_x86_common.mk：
+```bash
 CLANG_CONFIG_x86_DARWIN_HOST_EXTRA_CFLAGS := \
   -integrated-as
 
@@ -55,6 +59,7 @@ ifeq ($(HOST_OS),linux)
 CLANG_CONFIG_x86_LINUX_HOST_EXTRA_ASFLAGS := \
   --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
   --sysroot $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
+## 上面一行最后加上换行符 并添加下面这行
   -B$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/bin
 
 CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CFLAGS := \
