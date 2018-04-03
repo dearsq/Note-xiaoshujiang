@@ -37,10 +37,36 @@ device/mediatek/common/sepolicy/teei_daemon.te
 如果解决，那么 OK。
 如果没有解决。还需要如下修改：
 ```
+# 请自行做好原始 ld 的备份
 cp /usr/bin/ld.gold prebuilts/gcc/Linux-x86/host/x86_64-linux-glibc2.11-4.6/x86_64-linux/bin/ld
 make update-api
 make -j8 # 重新编译
 ```
+
+如果仍然报错，那么回退上述的所有修改，修改 build/core/clang/HOST_x86_common.mk：
+```
+CLANG_CONFIG_x86_DARWIN_HOST_EXTRA_CFLAGS := \
+  -integrated-as
+
+CLANG_CONFIG_x86_DARWIN_HOST_EXTRA_CFLAGS += -fstack-protector-strong
+endif
+
+ifeq ($(HOST_OS),linux)
+CLANG_CONFIG_x86_LINUX_HOST_EXTRA_ASFLAGS := \
+  --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
+  --sysroot $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
+  -B$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/bin
+
+CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CFLAGS := \
+  --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)
+
+CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CFLAGS += -fstack-protector-strong
+
+ifneq ($(strip $($(clang_2nd_arch_prefix)HOST_IS_64_BIT)),)
+CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CPPFLAGS := \
+  --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
+  --sysroot $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
+  ```
 
 
 ### libcam 无法编译的问题
