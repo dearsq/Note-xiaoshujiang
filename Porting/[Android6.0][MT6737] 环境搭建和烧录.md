@@ -9,7 +9,7 @@ DeviceOS:Android6.0
 Kernel: Linux4.10
 HostOS: Ubuntu16.04
 
-## 编译问题
+## 编译问题@Ubuntu16.04
 
 ### teei_daemon.te ERROR
 ```
@@ -43,10 +43,7 @@ make update-api
 make -j8 # 重新编译
 ```
 
-如果仍然有如下报错：
-```
-```
-
+如果仍然有报错，
 那么回退上述的所有修改，修改 build/core/clang/HOST_x86_common.mk：
 ```bash
 CLANG_CONFIG_x86_DARWIN_HOST_EXTRA_CFLAGS := \
@@ -71,8 +68,7 @@ ifneq ($(strip $($(clang_2nd_arch_prefix)HOST_IS_64_BIT)),)
 CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CPPFLAGS := \
   --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
   --sysroot $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
-  ```
-
+```
 
 ### libcam 无法编译的问题
 错误信息：
@@ -83,6 +79,8 @@ make: *** No rule to make target 'out/target/product/br6737m_65_s_m0/obj_arm/STA
 ```
 aiiage@repo:~/alps$ cp -a vendor/mediatek/proprietary/hardware/mtkcam/legacy/platform/mt6735m/hal/memory vendor/mediatek/proprietary/hardware/mtkcam/legacy/platform/mt6735m/entry/
 ```
+
+## 烧录问题@Linux
 
 ### S_BROM_CMD_JUMP_DA_FAIL
 是由于 Ubuntu14.04 / 16.04 环境问题。
@@ -107,7 +105,9 @@ ok
 ```
 如果出现pmt changed for the rom; it must be downloaded这个错误，则选择固件升级，便可以下载。
 
-
 ### S_INVALID_BBCHIP_TYPE
 芯片类型不匹配
+
 ![enter description here](./images/1522658598110.jpg)
+
+可能是 lunch 错工程。
