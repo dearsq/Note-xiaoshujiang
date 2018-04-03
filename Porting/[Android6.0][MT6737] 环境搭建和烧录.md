@@ -31,8 +31,8 @@ device/mediatek/common/sepolicy/teei_daemon.te
 ### clang 报错
 修改  alps/art/build/android.common_build.mk 大概81行
 ```
-#ifneq ($(WITHOUT_HOST_CLANG),true)
-ifeq ($(WITHOUT_HOST_CLANG),false)
+-- ifneq ($(WITHOUT_HOST_CLANG),true)
+++ ifeq ($(WITHOUT_HOST_CLANG),false)
 ```
 
 ### libcam 无法编译的问题
