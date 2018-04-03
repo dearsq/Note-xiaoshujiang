@@ -34,6 +34,14 @@ device/mediatek/common/sepolicy/teei_daemon.te
 -- ifneq ($(WITHOUT_HOST_CLANG),true)
 ++ ifeq ($(WITHOUT_HOST_CLANG),false)
 ```
+如果解决，那么 OK。
+如果没有解决。还需要如下修改：
+```
+cp /usr/bin/ld.gold prebuilts/gcc/Linux-x86/host/x86_64-linux-glibc2.11-4.6/x86_64-linux/bin/ld
+make update-api
+make -j8 # 重新编译
+```
+
 
 ### libcam 无法编译的问题
 错误信息：
