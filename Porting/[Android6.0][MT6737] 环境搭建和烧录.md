@@ -4,9 +4,31 @@ tags: android6.0,mtk6737
 grammar_cjkRuby: true
 ---
 
+Hardware:MT6737
+DeviceOS:Android6.0
+Kernel: Linux4.10
+HostOS: Ubuntu16.04
+
 ## 编译问题
 
-### art 报错
+### teei_daemon.te ERROR
+```
+#allow osi tmpfs:lnk_file read;
+device/mediatek/common/sepolicy/teei_daemon.te:30:ERROR 'unknown type teei_client_device' at token ';' on line 25309:
+#define for mlsconstrain
+typeattribute teei_client_device mlstrustedobject;
+checkpolicy:  error(s) encountered while parsing configuration
+out/host/linux-x86/bin/checkpolicy:  loading policy configuration from out/target/product/br6737m_65_s_m0/obj/ETC/sepolicy.recovery_intermediates/policy_recovery.conf
+external/sepolicy/Android.mk:96: recipe for target 'out/target/product/br6737m_65_s_m0/obj/ETC/sepolicy.recovery_intermediates/sepolicy.recovery' failed
+make: *** [out/target/product/br6737m_65_s_m0/obj/ETC/sepolicy.recovery_intermediates/sepolicy.recovery] Error 1
+```
+```
+device/mediatek/common/sepolicy/teei_daemon.te 
+# 去掉最后一行
+-- typeattribute teei_client_device mlstrustedobject；
+```
+
+### clang 报错
 修改  alps/art/build/android.common_build.mk 大概81行
 ```
 #ifneq ($(WITHOUT_HOST_CLANG),true)
