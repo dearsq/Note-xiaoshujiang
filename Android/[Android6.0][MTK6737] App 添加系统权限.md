@@ -93,3 +93,27 @@ java -jar signapk.jar  platform.x509.pem platform.pk8 input.apk output.apk
 在 apk 如果想要使用 root 权限可以在程序中通过运行 shell 脚本 / Linux 下的程序实现.
 
 参考 https://blog.csdn.net/dearsq/article/details/78788022
+
+## 去掉第三方应用的申请权限弹窗
+
+比如我的 App 需要 Camera 和 Recorder 权限:
+```
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+```
+
+`frameworks/base/services/core/java/com/android/server/pm/DefaultPermissionGrantPolicy.java `
+是用来控制 App 权限的.
+在其中添加系统 APP 所带权限, 第一次开机后就会将该权限赋予 App.
+
+```
+            PackageParser.Package  AiiagePackage = getPackageLPr(
+                    "com.android.Aiiage");
+            if (AiiagePackage != null) {
+			 	Log.d(TAG, "AiiagePackage >> not null");
+                grantRuntimePermissionsLPw(AiiagePackage, CAMERA_PERMISSIONS, userId);
+                grantRuntimePermissionsLPw(AiiagePackage, MICROPHONE_PERMISSIONS, userId);
+            }else{
+                Log.d(TAG, "AiiagePackage >> null");
+            }
+```
