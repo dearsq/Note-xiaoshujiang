@@ -17,13 +17,13 @@ sudo apt-get install git-core gnupg flex bison ccache gperf libsdl1.2-dev libesd
 ```
 3>ubuntu = 14.04
 ```
-sudo apt-get install git-core gnupg flex bison ccache gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev build-essential zip curl libncurses5-dev zlib1g-dev valgrind libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev lib32readline-gplv2-dev lib32z1-dev libgl1-mesa-dev g++-multilib g++-4.8-multilib mingw32 tofrodos python-markdown libxml2-utils xsltproc libc6-dev-i386 lib32z1 lib32ncurses5 lib32bz2-1.0 lib32readline-gplv2-dev wine
+sudo apt-get install git-core gnupg flex bison ccache gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev build-essential zip curl libncurses5-dev zlib1g-dev valgrind libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev g++-multilib g++-4.8-multilib mingw32 tofrodos python-markdown libxml2-utils xsltproc libc6-dev-i386 lib32z1 lib32ncurses5 lib32bz2-1.0 lib32readline-gplv2-dev wine
 ```
 安装无问题
 
 ubuntu = 16.04
 ```
-sudo apt-get install git-core gnupg flex bison ccache gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev build-essential zip curl libncurses5-dev zlib1g-dev valgrind libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev lib32readline-gplv2-dev lib32z1-dev libgl1-mesa-dev g++-multilib g++-4.8-multilib mingw32 tofrodos python-markdown libxml2-utils xsltproc libc6-dev-i386 lib32z1 lib32ncurses5 lib32bz2-1.0 lib32readline-gplv2-dev wine
+sudo apt-get install git-core gnupg flex bison ccache gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev build-essential zip curl libncurses5-dev zlib1g-dev valgrind libc6-dev lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev g++-multilib g++-4.8-multilib tofrodos python-markdown libxml2-utils xsltproc libc6-dev-i386 lib32z1 lib32ncurses5 wine mingw32 lib32bz2-1.0 lib32readline-gplv2-dev 
 ```
 报错有如下无法定位：
 libwxgtk2.8-dev mingw32
