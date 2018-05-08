@@ -6,7 +6,7 @@ grammar_cjkRuby: true
 
 Hardware:MT6737
 DeviceOS:Android6.0
-Kernel: Linux4.10
+Kernel: Linux3.18
 HostOS: Ubuntu16.04
 
 [TOC]
@@ -44,3 +44,6 @@ index c92ba45..2e59921 100644
          >
 
 ```
+
+## 隐藏
+如果想要隐藏，可以通过 qemu.hw.mainkeys=1 实现。
