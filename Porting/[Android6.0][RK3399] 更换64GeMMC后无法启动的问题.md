@@ -139,9 +139,11 @@ grammar_cjkRuby: true
 ```
 后面则是重复出现上面这个 ` mounted filesystem with ordered data mode. Opts: noauto_da_alloc,discard` 的错误.
 
-## 解决办法
-这个是由于硬件上 eMMC 走线有问题. 导致信号不完整.
-尝试降低 eMMC CLK Frequence 解决.
+## 解决方案
+
+从 Log 上来看, 显然是 fe330000 的有问题. 查看 fe330000 是 sdhci. 所以确定是 EMMC 有问题.
+在系统起来后, eMMC 的 clock 为 200MHZ , 尝试降低 eMMC CLK Frequence , 发现 50MHZ 100MHZ 150MHZ 系统均可以正常启动.
+后来和硬件沟通, 了解到这个是由于硬件上 eMMC 走线有问题. 导致信号不完整.
 
 ```
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-vop-clk-set.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-vop-clk-set.dtsi
