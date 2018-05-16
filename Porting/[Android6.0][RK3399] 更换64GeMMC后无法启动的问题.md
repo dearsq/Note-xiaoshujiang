@@ -4,6 +4,14 @@ tags: rockchip,emmc
 grammar_cjkRuby: true
 ---
 
+Author: Younix 
+Platform: RK3399 
+OS: Android 6.0 
+Kernel: 4.4 
+Version: v2018.05
+
+
+[TOC]
 
 ## 错误日志
 ```
