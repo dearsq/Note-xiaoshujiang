@@ -4,6 +4,29 @@ tags: modem
 grammar_cjkRuby: true
 ---
 
+Hardware:MT6737
+DeviceOS:Android6.0
+Kernel: Linux4.10
+HostOS: Ubuntu16.04
+
+## 一 移植步骤
+### 1. 先解压 modem 压缩包
+### 2. 安装 modem 编译需要的环境
+```
+*******************************************
+recommended Build Environment
+*******************************************
+* [OS]                : Linux
+* [PERL]              : v5.10.1 or v5.14.2
+* [MAKE]              : GNU Make v3.81
+* [SHELL]             : GNU bash v4.1.5
+* [GCC-ARM-NONE-EABI] : v4.6.2 or above
+* [NATIVE GCC(UBUNTU)]: v4.5 or above
+```
+### 3. 进行编译
+```
+younix@younixVB:~/WorkSpace2/MTK6737/mcu$ ./make.sh "BR6737M_65_S_M0(LTG_DSDS).mak" new
+
 
 *******************************************
 recommended Build Environment
@@ -14,12 +37,6 @@ recommended Build Environment
 * [SHELL]             : GNU bash v4.1.5
 * [GCC-ARM-NONE-EABI] : v4.6.2 or above
 * [NATIVE GCC(UBUNTU)]: v4.5 or above
-
-
-./make.sh "BR6737M_65_S_M0(LTG_DSDS).mak" new
-
-```
-younix@younixVB:~/WorkSpace2/MTK6737/mcu$ ./make.sh "BR6737M_65_S_M0(LTG_DSDS).mak" new
 project_name = BR6737M_65_S_M0
 flavor = LTG_DSDS
 clean build/BR6737M_65_S_M0/LTG_DSDS/tmp/*.*
@@ -52,13 +69,18 @@ To avoid unexpected errors , please install the recommended Tool Chain.
   Build Environment is NOT RECOMMENDED!
 *******************************************
 
-makefile check is done
-Cleaning directories under ./build/BR6737M_65_S_M0/LTG_DSDS ...
-Cleaning dep files under ./build/BR6737M_65_S_M0/LTG_DSDS/bin/dep
-Cleaning obj files under ./build/BR6737M_65_S_M0/LTG_DSDS/bin/obj
-Cleaning lib files under ./build/BR6737M_65_S_M0/LTG_DSDS/bin/lib
-Cleaning lib files under ./build/BR6737M_65_S_M0/LTG_DSDS/bin/lib
+```
+### 4. 拷贝 modem 固件到 alps SDK 中
 
+接下来利用 pl 脚本自动重命名 modem 固件.
+```
+perl device/mediatek/build/build/tools/modemRenameCopy.pl ../modem "BR6737M_65_S_M0(LTG_DSDS)"
+```
+这个脚本会自动将 `../modem` 中的内容 copy 并 rename 到 vendor 中的 modem 子目录中, 并构建 Android.mk 
+
+## 错误汇总
+###  ia32-libs
+```
 start Drv feature check...
 get feature list from drv_features.h...
 get feature list from drv_features_option.h...
@@ -102,16 +124,6 @@ tools/DbgInfoGen: error while loading shared libraries: libstdc++.so.6: cannot o
 sudo apt-get install lib32stdc++6
 ```
 
-编译完成.
-
-### 
-接下来利用 pl 脚本自动重命名 modem 固件.
-```
-perl device/mediatek/build/build/tools/modemRenameCopy.pl ../modem "BR6737M_65_S_M0(LTG_DSDS)"
-```
-
-
-### 
 
 ## 参考脚本
 ```
