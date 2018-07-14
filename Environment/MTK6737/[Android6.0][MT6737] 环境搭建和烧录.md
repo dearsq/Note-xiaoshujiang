@@ -6,7 +6,7 @@ grammar_cjkRuby: true
 
 Hardware:MT6737
 DeviceOS:Android6.0
-Kernel: Linux4.10
+Kernel: Linux3.18
 HostOS: Ubuntu16.04
 
 ## 编译问题@Ubuntu16.04
