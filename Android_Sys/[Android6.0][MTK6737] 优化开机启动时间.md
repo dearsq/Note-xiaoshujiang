@@ -4,6 +4,13 @@ tags: android,mtk
 grammar_cjkRuby: true
 ---
 
+Hardware:MTK6737
+DeviceOS:Android6.0
+Kernel: Linux3.18
+HostOS: Ubuntu16.04
+
+[TOC]
+
 Google 的文档:
 https://source.android.com/devices/tech/perf/boot-times
 
