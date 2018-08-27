@@ -1,5 +1,5 @@
 ---
-title: [预研] Flutter 开发资料汇总
+title: [Flutter] 开发资料汇总
 tags: 
 grammar_cjkRuby: true
 ---
@@ -18,7 +18,6 @@ https://github.com/flutter/posse_gallery
 
 第三方资料汇总:
 https://github.com/Solido/awesome-flutter
-
 
 Google IO 大会直播:
 https://goo.gl/csEr1f
