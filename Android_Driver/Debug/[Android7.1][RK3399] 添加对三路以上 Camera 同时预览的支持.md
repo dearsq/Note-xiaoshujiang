@@ -4,8 +4,14 @@ tags: android
 grammar_cjkRuby: true
 ---
 
+Platform: RK3399 
+OS: Android 7.1 
+Kernel: v4.4.83
+
+[TOC]
+
 ## 思路
-系统默认只支持两路Camera,只要将CameraHal中的数量限制改掉就可以了。 
+系统默认只支持两路Camera,只要将CameraHal中的数量限制改掉就可以了。 (由 2 改为 10)
 另外，有些地方直接用0和1表示Camera通道，也要做相应修改。
 
 ## 代码
