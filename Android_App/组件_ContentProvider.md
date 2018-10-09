@@ -4,7 +4,6 @@ tags: android
 grammar_cjkRuby: true
 ---
 
-
 ## 基本概念
 用法两种:
 1. 使用现有的ContentProvider来读取和操作相应程序中的数据
