@@ -4,6 +4,10 @@ tags: android
 grammar_cjkRuby: true
 ---
 
+Platform: RK3399 
+OS: Android 7.1 
+Kernel: v4.4.83
+
 [TOC]
 
 ## 基本概念
