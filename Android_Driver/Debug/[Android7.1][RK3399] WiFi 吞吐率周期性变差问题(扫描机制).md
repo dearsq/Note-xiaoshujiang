@@ -50,6 +50,11 @@ WIFI_RESCAN_INTERVAL_MS默认定义为10秒。
 // Combo scans can take 5-6s to complete - set to 10s.
 private static final int WIFI_RESCAN_INTERVAL_MS = 10 * 1000;          
 ```
+
+WiFi Setting和非Settings界面的扫描是同时不干预并存工作的.
+其中35秒和75秒是非WiFi界面的周期扫描，间隔40秒，说明是第二次(20 x 2)扫描了。 
+其他的是在WiFi Settings界面扫描，每10秒一次。
+
 ### 非WiFi Setting界面
 ```
 // Start a connectivity scan. The scan method is chosen according to
@@ -76,7 +81,8 @@ startConnectivityScan ->
     mScanner.startDisconnectedPnoScan ->
       startPnoScan
 ```
-没有保存网络的时候：
+
+## 没有保存网络情况
 ```
 class DisconnectedState extends State {
 
@@ -96,6 +102,4 @@ mNoNetworksPeriodicScan的值被定义在 frameworks/base/core/res/res/values/co
 ```
 <integer translatable="false" name="config_wifi_framework_scan_interval">300000</integer>1
 ```
-WiFi Setting和非Settings界面的扫描是同时不干预并存工作的.
-其中35秒和75秒是非WiFi界面的周期扫描，间隔40秒，说明是第二次(20 x 2)扫描了。 
-其他的是在WiFi Settings界面扫描，每10秒一次。
+可以看到为 5min
