@@ -8,6 +8,8 @@ Platform: RK3399
 OS: Android 7.1 
 Kernel: v4.4.83
 
+[TOC]
+
 ## 硬件原理图
 
 ![](https://ws1.sinaimg.cn/large/ba061518gy1fw21hwfzimj210w0kiwjv.jpg)
@@ -16,7 +18,7 @@ Kernel: v4.4.83
 * 控制走I2C1通道
 * 输出走HPOUTL/HPOUTR
 
-## DTS
+## DTS 修改
 ./rk3399-excavator-sapphire.dtsi
 参考 rt5651-sound 的配置:
 ```
@@ -93,6 +95,7 @@ Kernel: v4.4.83
 };
 ```
 
+## Driver 修改
 clock 的 driver 部分对应进行修改:
 rk3399.dtsi
 ```
@@ -339,3 +342,6 @@ index 37e665f..54ac812 100644
  /* pclk gates */
  #define PCLK_PERIHP            320
 ```
+
+
+## 遇到问题
