@@ -4,6 +4,12 @@ tags: android
 grammar_cjkRuby: true
 ---
 
+Platform: RK3399  
+OS: Android 7.1  
+Kernel: v4.4.83
+
+[TOC]
+
 ## 应用场景
 rk3399平台可以支持多种不同接口的Camera,如MIPI, DVP, UVC camera。 
 对于DVP,MIPI的Camera,对应的配置是放在cam_board.xml的。 
@@ -71,6 +77,6 @@ int camera_get_number_of_cameras(void)
             }
         }
     }
-....
+  ...
 }
 ```
