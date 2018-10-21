@@ -22,5 +22,5 @@ Setting App 在没有物理按键和虚拟返回键的时候无法返回.
 +                mDisplayHomeAsUpEnabled = true;
                  // Show Search affordance
                  mDisplaySearch = true;
-                 mInitialTitleResId = R.string.dashboard_title;
+                 mInitia               lTitleResId = R.string.dashboard_title;
 ```
