@@ -18,13 +18,38 @@
 │   ├── [Android6.0][RK3399] 设置系统默认不会休眠.md
 │   ├── [Android6.0][RK3399] 隐藏导航栏或状态栏.md
 │   ├── [Android6.0] 使用 repo 更新某个指定 git 仓库.md
-│   └── [Android] AS 导入源码中的 App “Setting”.md
+│   ├── [Android7.1][RK3399] 添加开机播放视频功能.md
+│   ├── [Android7.1] 打开设置中的返回键.md
+│   ├── [Android] AS 导入源码中的 App “Setting”.md
+│   ├── [Android] 反编译 Android APK.md
+│   ├── SOP_Intent传输对象的方法.md
+│   ├── SOP_MediaPlayer.md
+│   ├── SOP_Notification.md
+│   ├── SOP_WebView.md
+│   ├── SOP_WebView_XML和JSON.md
+│   ├── SOP_全局获取Context方法.md
+│   ├── SOP_动态权限.md
+│   ├── SOP_多线程编程.md
+│   ├── SOP_异步消息处理机制.md
+│   ├── SOP_控件_AlertDialog.md
+│   ├── SOP_控件_Fragment.md
+│   ├── 数据持久化_SharedPreferences.md
+│   ├── 数据持久化_数据库_LitePal 和 SQLite.md
+│   ├── 数据持久化_文件存储.md
+│   ├── 组件_BroadcastReceiver.md
+│   ├── 组件_ContentProvider.md
+│   └── 组件_Service.md
 ├── Android_Driver
 │   ├── Debug
 │   │   ├── [Android5.1][RK3288] LCD Mipi 初始化长包数据规范问题.md
 │   │   ├── [Android6.0][RK3399][BUG] 插上 HDMI 时开机解锁锁屏后死机.md
 │   │   ├── [Android6.0][RK3399] 开机前几秒串口打印异常问题.md
-│   │   └── [Android6.0][RK3399] 更换64GeMMC后无法启动的问题.md
+│   │   ├── [Android6.0][RK3399] 更换64GeMMC后无法启动的问题.md
+│   │   ├── [Android7.1][RK3399] WiFi 吞吐率周期性变差问题(扫描机制).md
+│   │   ├── [Android7.1][RK3399] 只保留 USB Camera (去掉对 Mipi DVP Camera 的支持).md
+│   │   ├── [Android7.1][RK3399] 插上 TypeC 为 USB_FLOATING_CHARGER 模式.md
+│   │   ├── [Android7.1][RK3399] 添加对 Camera 动态热插拔的支持.md
+│   │   └── [Android7.1][RK3399] 添加对三路以上 Camera 同时预览的支持.md
 │   ├── Device
 │   │   ├── [Device] Mipi LCD 的基础知识.md
 │   │   ├── [Device] Mipi 接口 和 LVDS 接口区别.md
@@ -57,6 +82,9 @@
 │   │   ├── [Android6.0][RK3399] 电池系统（三）电量计 CW2015 驱动流程分析.md
 │   │   ├── [Android6.0][RK3399] 电池系统（二）BQ IC 添加 DC 充电功能.md
 │   │   ├── [Android6.0][RK3399] 电池系统（四）不插电池无法开机的问题.md
+│   │   ├── [Android7.1][RK3399] Codec rt5640 移植.md
+│   │   ├── [Android7.1][RK3399] RK reboot 机制驱动分析.md
+│   │   ├── [Android7.1][RK3399] 使用 ramoops 机制查看开机 Kernel Log.md
 │   │   ├── [Linux4.4][RK3399] DRM HDMI 调试小结.md
 │   │   ├── [Linux4.4][RK3399] DRM 框架及代码流程.md
 │   │   ├── [Linux4.4] 以 SPI 驱动模型为例分析 Linux 主机驱动与外设驱动分离模型.md
@@ -65,9 +93,6 @@
 │   │       ├── [NFC] NFC 客户 Support 流程.md
 │   │       ├── [NFC] NFC 程序设计（NDEF 格式介绍）.md
 │   │       └── [NFC] NFC 程序设计（基础知识）.md
-│   ├── images
-│   │   ├── 1522658476893.jpg
-│   │   └── 1522658598110.jpg
 │   ├── [TODO][Android5.1][RK3288] Camera（一）基础知识 及 RK 平台启动流程.md
 │   ├── [TODO][Android5.1][RK3288] Camera（三）OV13850 Camera 调试笔记.md
 │   ├── [TODO][Android5.1][RK3288] Camera（二）Linux 中的 V4L2.md
@@ -79,6 +104,7 @@
 │   └── [TODO][Android6.0][RK3399] 休眠唤醒调试步骤.md
 ├── Android_Sys
 │   ├── [Android5.1][RK3288]build.sh脚本分析.md
+│   ├── [Android6.0][MTK6737] 优化开机启动时间.md
 │   ├── [Android6.0] Reference-RIL 运行框架.md
 │   ├── [Android6.0] RILC 系统结构及 LibRIL 运行机制.md
 │   ├── [Android6.0] 启动流程(从开机到第一个程序）.md
@@ -98,6 +124,7 @@
 │   │   └── [Linux][RK3399] 基于 Firefly RK3399 Board 制作 Ubuntu Desktop 版本.md
 │   ├── MTK6737
 │   │   ├── [Android6.0][MT6737] 环境搭建和烧录.md
+│   │   ├── [Android6.0][MTK6737] 移植 Modem.md
 │   │   ├── images
 │   │   │   ├── 1523672363093.jpg
 │   │   │   └── 1523687165007.jpg
@@ -110,18 +137,19 @@
 │   ├── [Ubuntu] Linux下访问NAS服务器.md
 │   ├── [Ubuntu] 在终端中利用Wget下载百度云资源.md
 │   └── [Ubuntu] 服务器添加硬盘方法.md
+├── Flutter
+│   ├── [Flutter] 开发环境搭建.md
+│   ├── [Flutter] 开发资料汇总.md
+│   └── Readme.md
 ├── Language
 │   ├── [C] 函数调用的时候栈发生了什么.md
 │   ├── [C] 第一章 GCC 编译的背后.md
 │   ├── [Git] 如何修改之前的某次commit.md
 │   ├── [UnixC] 内存 mem 操作.md
 │   └── [其他] 编程修养.md
-├── LICENSE.txt
 ├── Life
 │   ├── Learning
-│   │   ├── README.md
 │   │   └── [王烁30天认知训练营] Day01 什么是查理·芒格的人生开关.md
-│   └── README.md
 ├── Linux
 │   ├── [Linux] DTS 架构下 Device 与 Driver 匹配流程.md
 │   ├── [Linux] i2c 与 spi 设备在新版内核中不采用DTS设备树形式 在驱动添加设备信息(board_info)的方法.md
@@ -141,7 +169,6 @@
 │   ├── [Linux] 文件批量重命名 rename.md
 │   ├── [Linux] 服务器添加硬盘方法.md
 │   └── [Linux] 统一设备模型.md
-├── README.txt
 └── VR
     ├── OpenGL
     │   ├── [OpenGL]一些基本概念和基于状态的方法.md
@@ -150,4 +177,4 @@
     ├── [VR] Cardboard Treasure Hunter 代码分析.md
     └── [VR] 应用开发入门基本知识.md
 
-
+20 directories, 164 files
