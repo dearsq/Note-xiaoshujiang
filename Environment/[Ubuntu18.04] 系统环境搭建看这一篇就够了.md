@@ -66,6 +66,13 @@ fi
 ```
 参考： https://www.jianshu.com/p/300827734b69
 
+卸载：
+执行
+```
+sudo sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/uninstall.sh)"
+```
+再把`/etc/passwd`中的 zsh 改回为 bash
+
 ### autojump 自动跳转
 ```
 sudo apt install autojump
