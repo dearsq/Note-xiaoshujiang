@@ -162,6 +162,9 @@ $ sudo net start sshd
 $ sudo ufw disable   
 $ ssh localhost  
 ```
+### 搭建 Gitlab
+参考：https://www.linuxidc.com/Linux/2018-01/150319.htm
+非常详细
 
 ## 四、Android 开发环境
 
