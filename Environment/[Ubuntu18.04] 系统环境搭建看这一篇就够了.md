@@ -163,7 +163,9 @@ $ sudo ufw disable
 $ ssh localhost  
 ```
 ### 搭建 Gitlab
-参考：https://www.linuxidc.com/Linux/2018-01/150319.htm
+参考：
+1. https://about.gitlab.com/install/#ubuntu
+2. https://www.zybuluo.com/lovemiffy/note/418758
 非常详细
 
 ## 四、Android 开发环境
