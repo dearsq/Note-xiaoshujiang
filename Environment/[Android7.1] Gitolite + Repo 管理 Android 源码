@@ -1,0 +1,261 @@
+title: [Android7.1] Gitolite + Repo 管理 Android 源码
+date: 2019-5-27 21:00:00
+tags: Android,Git,Repo,Gitolite
+
+---
+[TOC]
+
+基于 RK 官方文档 https://wenku.baidu.com/view/99fb9e2ea98271fe900ef93d.html
+和 lzpdz 小伙伴的笔记 https://blog.csdn.net/lzpdz/article/details/51672161
+进行梳理，更正了两者中过期以及错误的地方
+
+## 准备工作
+1、安装基础的程序
+```
+sudo apt-get install ssh git
+```
+2、生成密钥对
+```
+ssh-keygen -t rsa
+```
+PS：连续三次回车,即在本地生成了公钥和私钥,不设置密码,生成的公钥私钥在~/.ssh目录下，kent_rsa 是私钥， kent_rsa.pub是公钥 
+
+## GIT服务器建立（基于GITOLITE）
+### 服务器安装 gitolite（服务端操作）：
+a) 创建 git 账户：
+```
+sudo adduser --system --shell /bin/bash --group git
+sudo passwd git
+```
+b) 下载源码
+```
+git clone https://github.com/sitaramc/gitolite.git
+```
+c) 以 “git” 账户登录Linux 系统/ 或者直接：
+```
+su - git
+```
+d) 确保“~/.ssh/authorized_keys”为空或者不存在。
+e) 拷贝服务器管理员 kent 的公钥到 “$HOME/kent_rsa.pub”。
+```
+```
+f) 执行：
+```
+mkdir -p $HOME/bin
+```
+g) 执行下列命令安装，不同版本安装方法不同，请参考源码中的文档：
+```
+gitolite/install -to $HOME/bin
+```
+h) 执行：
+```
+$HOME/bin/gitolite setup -pk kent_rsa.pub #管理员的公钥
+```
+
+### 给 GIT 用户添加下载权限（服务端操作）
+a）如果没有就在$HOME 帐号下建一个.ssh 隐藏目录，并且把管理员帐号下面的 id_rsa（这个是 RK 下载密钥） 复制到刚建立的.ssh 下
+b）更改 RK 密钥的组权限
+```
+sudo chown git:git id_rsa*
+```
+我这里因为已经去 /etc/sudoer 给了 git sudoer 权限，所以可以直接操作。你可能需要先切换到 root 用户下才能操作。
+c）改权限（注意私钥必须是600，权限太高的话不行）
+```
+sudo chmod 600 .ssh/id_rsa*
+```
+
+### 使用 gitolite-admin 来管理服务器权限（在客户端操作）
+Git 工具相关概念资料，请搜索 progit 文档阅读理解。
+a) 克隆 gitolite 管理仓库：
+```
+# git clone ssh://git@host/gitolite-admin.git
+git clone ssh://git@10.10.9.19/gitolite-admin.git
+```
+说明:/git@host
+host 表示服务器的IP 地址或域名
+例如，服务器的 IP 是192.168.1.200
+那git 管理仓库是git clone ssh://git@192.168.1.200/gitolite-admin.git
+
+b) 添加用户公钥
+```
+cd gitolite-admin
+cp ~/.ssh/kent_rsa.pub keydir/kent_rsa.pub
+```
+c) 添加管理员用户 ##### 这一步先不需要 ######
+vi conf/gitolite.conf
+```
+@admin = admin1 admin2 admin3
+repo gitolite-admin
+		RW+ = @admin
+```
+
+d) 提交生效
+每次修改conf/gitolite.conf 内容都要提交才会生效
+```
+git add conf/gitolite.conf
+git commit “add usergroup”
+git push origin master
+```
+还需要以下两项功能的请移步：
+Gitdaemon（守护进程，开放一个公共的 git clone 服务，可选）
+Gitweb（提供像Github一样的Web服务，通过浏览器查看版本库记录，可选）
+
+http://blog.chinaunix.net/uid-26185912-id-3351963.html
+
+三、REPO 镜像安装
+1、git 服务器上的操作
+获取原始 repo 工具：
+```
+su - git
+ssh-agent bash
+ssh-add id_rsa # 这里 id_rsa 是 RK 的官方密钥
+git clone ssh://git@www.rockchip.com.cn/repo/rk/tools/repo
+```
+PS：补充下载官方repo的方法：
+wget http://android.git.kernel.org/repo 或者 curl http://android.git.kernel.org/repo >~/bin/repo 来下载 repo , chmod a+x ~/bin/repo
+
+1.1 如果你还没有获取到 RK 的 SDK，可以参照以下方法进行 repo init 
+初始化镜像仓库：
+cd repositroies    （进入代码git代码仓库目录）
+mkdir repo ; cd repo （repo 目录名字可以换，后面相应目录名字都得换，用红字标注的repo）
+RK 官方文档中是针对 rk3188 的描述如下
+```
+~/repo/repo init --mirror --repo-url ssh://git@www.rockchip.com.cn/repo/rk/tools/repo -u ssh://git@www.rockchip.com.cn/repo/rk/platform/manifest -b android-4.4 -m rk3188_android4.4.1.xml
+```
+对于 RK3399 ，应该如下操作
+```
+~/repo/repo init --mirror --repo-url=ssh://git@www.rockchip.com.cn:2222/repo-release/tools/repo.git -u ssh://git@www.rockchip.com.cn:2222/rk3399-nougat/manifests.git -m rk3399_nougat_release.xml
+```
+接下来下载代码即可
+```
+.repo/repo/repo sync -l
+.repo/repo/repo sync
+```
+备注：下载可能遇到问题：
+下载代码失败有几个原因
+一个没有.bashrc 文件
+需要从其它帐户下COPY 过来并且权限改成自己的组，并且要用keychain 管理
+具体使用方法如下：
+1. 安装 keychain 软件包：
+$sudo aptitude install keychain
+2. 配置使用密钥：
+$vim ~/.bashrc
+增加下面这行：
+eval `keychain --eval ~/.ssh/id_rsa`
+其中，id_rsa 是私钥文件名称。
+福州瑞芯微电子有限公司
+6
+执行 source ~/.bashrc 后，成功会有如下提示：
+* Found existing ssh-agent (22251)
+* Adding 1 ssh key(s)...
+Enter passphrase for /home/git/.ssh/id_rsa:
+* Error: Problem adding; giving up
+KeyChain 2.6.8; http://www.gentoo.org/proj/en/keychain/
+Copyright 2002-2004 Gentoo Foundation; Distributed under the GPL
+* Initializing /home/git/.keychain/lushen-sh file...
+* Initializing /home/git/.keychain/lushen-csh file...
+* Initializing /home/git/.keychain/lushen-fish file...
+* Starting ssh-agent
+* Warning: /home/git/.ssh/id_rsa.pub missing; can't tell if /home/git/.ssh/id_rsa is loaded
+创建仓库组权限：
+
+1.2 如果你已经下载了 RK 的 SDK，我们知道其解压后是一个 .repo 的仓库，我假设你已经通过 repo sync 同步到了最新的 SDK。
+所以我们需要修改 manifest.xml 将其仓库路径修改为公司服务器。
+
+PS：以下这部分操作操作用于批量获得代码仓库的位置，然后配置GITOLITE的权限
+.repo/repo/repo list -n > projects.txt
+sed -i ‘s/^repo//’ projects.txt （repo 指的是前面创建文件夹的名字，list 会把那个加上）
+sed -i ‘s/^/@rk\ = \ repo\//’ projects.txt
+
+2、客户端操作
+2.1 增加权限，并且创建repo/platform/manifest.git仓库
+
+将上面步骤的projects.txt 内容拷贝到客户端，添加到gitolite-admin/conf/gitolite.conf 中：
+cd path_to_gitolite-admin （指的是gitolite-admin 的路径）
+echo "" >> conf/gitolite.conf (添加个空行)
+cat projects.txt >> conf/gitolite.conf
+
+添加组权限，在文件最后（所有“@rk = repo/…”后面）添加如下内容：
+vi conf/gitolite.conf
+@usergroup = user1 user2 user3
+@rk = repo/platform/manifest
+
+repo @rk
+R = @usergroup
+RW+ = @admin
+
+完成后 commit 并且 push 生效；
+再在服务器上执行 $HOME/bin/gitolite setup -pk YourName.pub 使其生效
+
+PS：此步骤中的  @rk = repo/platform/manifest   此设置上传后，会在相应的服务端上创建出一个空的manifest.git仓库，作为下一步的基础；之前实验时曾经跳过，出现不少麻烦；
+
+
+
+3、MANIFEST 创建（还是在客户端操作）
+
+基于上一步服务器会生成一个空的manifest.git；随便一个目录，下载manifest.git仓库
+
+git clone ssh://git@host/repo/platform/manifest.git
+PS：host改为对应的服务器ip
+即 git clone ssh://git@10.10.9.19/repo/platform/manifest.git
+
+进入manifest工程，从server中拷贝一份manifest.xml 并上传
+
+cd manifest
+cp original.xml rk3188_android-4.4.xml(可以是其他名字)
+备注：original.xml 指的是同步下来的xml， /home/git/repositories/repo/.repo/manifests 目
+录下面的xml。
+复制完成后，打开改名后的 xml 文件，看一下最上面几行：如果发现下面的红色部分路
+径是../..的话，请修改为 .. 退出并保存。如果不修改将会导致客户端无法同步代码。fetch 指向的
+相对地址是init 时使用-u 后的参数指定的manifest 仓库地址的相对路径。
+举个例子说明下为什么这么改：假如使用的manifest 工程路径是/home/git/repositories/repo/platform
+/manifest.git，其他工程的路径，如/home/git/repositories/repo/rk/device/rockchip/rksdk.git，这个工程
+是rk 仓库，路径是device/rockchip/rksdk，rk 仓库的路径就是manifest 的上级的上级的rk 目录。
+<manifest>
+<remote name="aosp"
+fetch="../.."
+sync-c="true" />
+<remote name="rk"
+fetch="../.."
+sync-c="true" />
+<default revision="refs/tags/android-4.4.2_r1"
+remote="aosp"
+sync-j="4"
+sync-c="true" />
+
+
+git add rk3188_android-4.4.xml
+git commit -m “add initial manifest for android-4.4”
+git push origin master:android-4.4(分支名，可以是其他名字)
+
+
+
+3、镜像测试
+
+在客户端，先下载 repo 工具，如前所述，按照如下命令测试：
+git clone ssh://git@host/repo/rk/tools/repo （使用搭建的服务器里的repo 工具，host 是搭
+建的服务器域名或ip）
+mkdir test_repo; cd test_repo
+../repo/repo init --repo-url=ssh://git@host/repo/rk/tools/repo -u ssh://git@host/repo/platform/
+manifest -b android-4.4 -m rk3188_android-4.4.xml
+备注：
+--repo-url=ssh://git@host/repo/rk/tools/repo —— 这个路径是新搭建的服务器的repo 的路
+径。
+-u ssh://git@host/repo/platform/manifest —— 这个路径是新搭建的服务器的manifest 工程
+路径。
+-b android-4.4 —— 这个是manifest 工程中提交的分支名
+-m rk3188_android-4.4.xml —— 这个是使用的xml 文件名，是前面提交的名字，可以根据
+产品来命名，可以提交多个manifest，修改里面的分支名，来管理不同产品。
+如有提示权限问题，依照前述gitolite 添加权限即可。
+
+
+
+四、gerrit建立
+
+待续（从目前了解的情况看，如果搭建gerrit，不需要建立上面的gitolite服务器，gerrit中自行集成了相应的git服务器仓库）
+
+
+
+五、jenkins
+
+持续集成工具，先记录，待续
