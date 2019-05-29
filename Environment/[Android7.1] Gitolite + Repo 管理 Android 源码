@@ -186,7 +186,7 @@ cat projects.txt >> conf/gitolite.conf
 添加组权限，在文件最后（所有“@rk = repo/…”后面）添加如下内容：
 ```
 vi conf/gitolite.conf
-@usergroup = user1 user2 user3
+@user = user1 user2 user3
 @rk = repo/platform/manifest
 
 repo @rk
@@ -217,33 +217,32 @@ scp qxzn-git@host:/home/qxzn-git/rk3399/.repo/manifest.xml ./rk3399_android-7.1.
 这个对应着在 qxzn-git 服务器上的 manifest 仓库中 /home/qxzn-git/repositories/repo/.repo/manifests 目录下面的 xml。
 
 在复制完成后，打开改名后的 xml 文件，进行修改（非常关键）
-规则语法参考：repo的manifest.xml文件全解 https://blog.csdn.net/nwpushuai/article/details/79252297
-1. 删除 revision 、upstream 
+规则语法参考（务必先了解规则）：repo的manifest.xml文件全解 https://blog.csdn.net/nwpushuai/article/details/79252297
+
+1. 修改开头
+刚获取到的 rk3399 manifest.xml 应该是这样的
+```
+  <remote fetch="." name="aosp"/>
+  <remote fetch="." name="rk"/>
+  <default remote="aosp" revision="refs/tags/android-7.1.2_r6" sync-c="true" sync-j="4"/>
+```
+修改为 
+```
+<remote fetch="./" name="origin"/>
+<default remote="origin" revision="refs/heads/master" sync-j="4"/>
+```
+
+2. 删除 revision 、upstream 
 ```
 sed -i 's;revision=.*>;/>;g' rk3399_android-7.1.xml
 ```
-2. 删除 remote
+3. 删除 remote
 ```
-sed -i 's;remote=.*>;>;g' rk3399_android-7.1.xml
+sed -i 's;remote=.*>;/>;g' rk3399_android-7.1.xml
 ```
-3. 
-看一下最上面几行：如果发现下面的红色部分路径是../..的话，
-请修改为 .. 退出并保存。
-如果不修改将会导致客户端无法同步代码。
-fetch 指向的相对地址是init 时使用-u 后的参数指定的manifest 仓库地址的相对路径。
-（比如我这里是 ssh://git@www.rockchip.com.cn/repo/rk/platform/manifest  ）
-举个例子说明下为什么这么改：
-假如使用的manifest 工程路径是/home/git/repositories/repo/platform/manifest.git，
-其他工程的路径，如/home/git/repositories/repo/rk/device/rockchip/rksdk.git，
-这个工程是 rk 仓库，路径是device/rockchip/rksdk，rk 仓库的路径就是manifest 的上级的上级的rk 目录。
-```
-<manifest>
-<remote name="aosp" fetch="../.." sync-c="true" />
-<remote name="rk" fetch="../.." sync-c="true" />
-<default revision="refs/tags/android-4.4.2_r1" remote="aosp" sync-j="4" sync-c="true" />
-```
+4. 提交
 
-RK 案例：
+RK 官方文档中的案例：
 ```
 git add rk3188_android-4.4.xml
 git commit -m "add initial manifest for android-4.4"
@@ -251,13 +250,18 @@ git push origin master:android-4.4(分支名，可以是其他名字)
 ```
 在我这里：
 ```
-git add default.xml
+git add rk3399_android-7.1.xml
 git commit -m "add initial manifest for Android7.1"
-git push origin master:default
+git push origin master:refs/for/refs/heads/master
 ```
 
 
 3、镜像测试
+
+git-repo/repo init -u ssh://kris.fei@10.89.18.11:29418/SY1892-Platform/manifest.git -b master
+git-repo/repo init -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master
+./../../../qxzn-git/rk3399/.repo/repo/repo init -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master -m rk3399_android-7.1.xml
+
 在客户端，先下载 repo 工具，如前所述，按照如下命令测试：
 git clone ssh://git@host/repo/rk/tools/repo （使用搭建的服务器里的repo 工具，host 是搭
 建的服务器域名或ip）
