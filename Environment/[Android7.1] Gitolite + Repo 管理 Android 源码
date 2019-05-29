@@ -107,65 +107,8 @@ Gitweb（提供像Github一样的Web服务，通过浏览器查看版本库记�
 http://blog.chinaunix.net/uid-26185912-id-3351963.html
 
 ## REPO 镜像安装
-### 1. 获取 RK SDK（在本地主机上的操作）
-获取原始 repo 工具：
-```
-su - git
-ssh-agent bash
-ssh-add id_rsa # 这里 id_rsa 是 RK 的官方密钥
-git clone ssh://git@www.rockchip.com.cn/repo/rk/tools/repo
-```
-PS：补充下载官方repo的方法：
-wget http://android.git.kernel.org/repo 或者 curl http://android.git.kernel.org/repo >~/bin/repo 来下载 repo , chmod a+x ~/bin/repo
-
-1.1 如果你还没有获取到 RK 的 SDK，可以参照以下方法进行 repo init 
-初始化镜像仓库：
-cd repositroies    （进入代码git代码仓库目录）
-mkdir repo ; cd repo （repo 目录名字可以换，后面相应目录名字都得换，用红字标注的repo）
-RK 官方文档中是针对 rk3188 的描述如下
-```
-~/repo/repo init --mirror --repo-url ssh://git@www.rockchip.com.cn/repo/rk/tools/repo -u ssh://git@www.rockchip.com.cn/repo/rk/platform/manifest -b android-4.4 -m rk3188_android4.4.1.xml
-```
-对于 RK3399 ，应该如下操作
-```
-~/repo/repo init --mirror --repo-url=ssh://git@www.rockchip.com.cn:2222/repo-release/tools/repo.git -u ssh://git@www.rockchip.com.cn:2222/rk3399-nougat/manifests.git -m rk3399_nougat_release.xml
-```
-接下来下载代码即可
-```
-.repo/repo/repo sync -l
-.repo/repo/repo sync
-```
-备注：下载可能遇到问题：
-下载代码失败有几个原因
-一个没有.bashrc 文件
-需要从其它帐户下COPY 过来并且权限改成自己的组，并且要用keychain 管理
-具体使用方法如下：
-1. 安装 keychain 软件包：
-$sudo aptitude install keychain
-2. 配置使用密钥：
-$vim ~/.bashrc
-增加下面这行：
-eval `keychain --eval ~/.ssh/id_rsa`
-其中，id_rsa 是私钥文件名称。
-福州瑞芯微电子有限公司
-6
-执行 source ~/.bashrc 后，成功会有如下提示：
-* Found existing ssh-agent (22251)
-* Adding 1 ssh key(s)...
-Enter passphrase for /home/git/.ssh/id_rsa:
-* Error: Problem adding; giving up
-KeyChain 2.6.8; http://www.gentoo.org/proj/en/keychain/
-Copyright 2002-2004 Gentoo Foundation; Distributed under the GPL
-* Initializing /home/git/.keychain/lushen-sh file...
-* Initializing /home/git/.keychain/lushen-csh file...
-* Initializing /home/git/.keychain/lushen-fish file...
-* Starting ssh-agent
-* Warning: /home/git/.ssh/id_rsa.pub missing; can't tell if /home/git/.ssh/id_rsa is loaded
-创建仓库组权限：
-
-1.2 如果你已经下载了 RK 的 SDK，我们知道其解压后是一个 .repo 的仓库，我假设你已经通过 repo sync 同步到了最新的 SDK。
-所以我们需要修改 manifest.xml 将其仓库路径修改为公司服务器。
-
+### 1. 获取 RK SDK（在客户端上的操作）
+这里略过了，基本上大家都知道。
 
 获取到 SDK 后，我们获取 projects 列表，用于后面编写 gitolite.conf
 ```
@@ -175,12 +118,12 @@ sed -i ‘s/^/@rk\ = \ repo\//’ projects.txt
 ```
 
 ### 2. 创建 project tree（在客户端的操作）
-增加权限，并且创建repo/platform/manifest.git仓库。
+目标：增加权限，并且创建repo/platform/manifest.git仓库。
 
-将上面步骤的projects.txt 内容拷贝到客户端，添加到gitolite-admin/conf/gitolite.conf 中：
+将上面步骤的 projects.txt 内容添加到gitolite-admin/conf/gitolite.conf 中：
 ```
-cd path_to_gitolite-admin （指的是gitolite-admin 的路径）
-echo "" >> conf/gitolite.conf (添加个空行)
+cd path_of_gitolite-admin # 进入 gitolite-admin 的路径
+echo "" >> conf/gitolite.conf # 添加个空行
 cat projects.txt >> conf/gitolite.conf
 ```
 添加组权限，在文件最后（所有“@rk = repo/…”后面）添加如下内容：
@@ -196,19 +139,19 @@ repo @rk
 ```
 完成后 commit 并且 push 生效
 
-PS：此步骤中的  @rk = repo/platform/manifest   此设置上传后，会在相应的服务端上创建出一个空的manifest.git仓库，作为下一步的基础；
-我们在 /home/qxzn-git/ 下可以看到 repositories/repo 目录中即生成了 conf/gitolite.conf  中指定的目录结构，
-该 repo 目录即为我们后面实现 manifest.xml 的 remote fetch 的路径
+PS：push 后，我们在 /home/qxzn-git/ 下可以看到 repositories/repo 目录中即生成了 conf/gitolite.conf  中指定的目录结构。
+比如  @rk = repo/platform/manifest   此设置上传后，会在相应的服务端上创建出一个空的manifest.git仓库，作为下一步的基础。
+home/qxzn-git/repositories/repo 目录即为我们后面实现 manifest.xml 的 remote fetch 的路径。
  
-### MANIFEST 创建（还是在客户端操作）
-基于上一步服务器会生成一个空的manifest.git
+### 3. MANIFEST 创建（在客户端操作）
+目标：创建 Manifest.xml 文件，用来管理 Android 源码中的 git 子仓库。
+基于上一步服务器会生成一个空的 manifest.git
 去另外一个路径(/home/qxzn/codes/），我们下载 manifest 仓库
 ```
 # git clone ssh://git@host/repo/platform/manifest.git
 git clone ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git
 # 如果出现没有权限之类的错误，请确认 gitolite-admin/conf/gitolite.conf 中 R、RW+ 等权限设置是否正确
 ```
-
 进入manifest工程，从server中之前获取的 RK 源码中拷贝一份manifest.xml 并上传
 ```
 cd manifest
@@ -241,56 +184,59 @@ sed -i 's;remote=.*>;>;g' rk3399_android-7.1.xml
 <remote fetch="ssh://qxzn-git@10.10.7.83/repo" name="origin"/>
 <default remote="origin" revision="master" sync-j="4"/>
 ```
-
 4. 提交
-
-RK 官方文档中的案例：
-```
-git add rk3188_android-4.4.xml
-git commit -m "add initial manifest for android-4.4"
-git push origin master:android-4.4(分支名，可以是其他名字)
-```
-在我这里：
 ```
 git add rk3399_android-7.1.xml
 git commit -m "add initial manifest for Android7.1"
-git push origin master:refs/for/refs/heads/master
+git push origin master
 ```
 
-
-3、镜像测试
-
-git-repo/repo init -u ssh://kris.fei@10.89.18.11:29418/SY1892-Platform/manifest.git -b master
-git-repo/repo init -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master
-./../../../qxzn-git/rk3399/.repo/repo/repo init -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master -m rk3399_android-7.1.xml
-
-在客户端，先下载 repo 工具，如前所述，按照如下命令测试：
-git clone ssh://git@host/repo/rk/tools/repo （使用搭建的服务器里的repo 工具，host 是搭
-建的服务器域名或ip）
-mkdir test_repo; cd test_repo
+### 4. 将 RK SDK 提交到 qxzn-git 服务器的 repo 仓库中
+我们需要一个纯净的 RK SDK：
 ```
-.repo/repo/repo init --repo-url=ssh://git@10.10.7.83/repo/rk/tools/repo -u ssh://git@10.10.7.83/repo/platform/manifest -b default -m default.xml
+# 删除所有的 .git 子仓库
+find . -name ".git" | xargs rm -rf
+
+# 删除 .repo 
+rm .repo -rf
+
+# 查看纯净的代码大小
+du -sh .
+24G # RK3399 的代码大概在 24G 左右
 ```
-../repo/repo init --repo-url=ssh://git@host/repo/rk/tools/repo -u ssh://git@host/repo/platform/
-manifest -b android-4.4 -m rk3188_android-4.4.xml
-备注：
---repo-url=ssh://git@host/repo/rk/tools/repo —— 这个路径是新搭建的服务器的repo 的路
-径。
--u ssh://git@host/repo/platform/manifest —— 这个路径是新搭建的服务器的manifest 工程
-路径。
--b android-4.4 —— 这个是manifest 工程中提交的分支名
--m rk3188_android-4.4.xml —— 这个是使用的xml 文件名，是前面提交的名字，可以根据
-产品来命名，可以提交多个manifest，修改里面的分支名，来管理不同产品。
-如有提示权限问题，依照前述gitolite 添加权限即可。
+接下来根据之前我们修改的  rk3399_android-7.1.xml 里面描述的目录结构生成新的 .git 仓库并提交到远程仓库
+使用以下 python3 的脚本实现
+https://github.com/dearsq/Note-xiaoshujiang/blob/master/Environment/Android7.1_RK3399_getnames_and_init_push_git_proj.py
+```
+# 进入 24G 源码目录
+cd rk3399 
+# 拷贝脚本 和 manifest.xml 文件（rk3399_android-7.1.xml）到当前目录
+# 略
 
+# 修改脚本中 remote 部分的地址
+# 脚本中 remote = 'ssh://qxzn-git@10.10.7.83/repo' 根据自己实际情况进行修改
+vi Android7.1_RK3399_getnames_and_init_push_git_proj.py
 
+# 执行脚本
+chmod +x Android7.1_RK3399_getnames_and_init_push_git_proj.py
+./Android7.1_RK3399_getnames_and_init_push_git_proj.py rk3399_android-7.1.xml
+```
+注意！使用脚本前请保证
+1. python3 工具已经安装正确
+2. git config --global user.name 等都正确配置
+3. id_rsa 等密钥正常添加，ssh-add ～/.ssh/qxzn_rsa
 
-四、gerrit建立
+## Repo 下载测试
+```
+repo init -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master -m rk3399_android-7.1.xml
+```
+如果没有 -m 指定 xml， 会使用名为 default 的 xml
+```
+repo sync -l
+repo sync
+```
 
-待续（从目前了解的情况看，如果搭建gerrit，不需要建立上面的gitolite服务器，gerrit中自行集成了相应的git服务器仓库）
-
-
-
-五、jenkins
-
-持续集成工具，先记录，待续
+如果你没有 repo 的话：
+```
+git clone https://github.com/dearsq/repo.git
+```
