@@ -77,7 +77,7 @@ Git 工具相关概念资料，请搜索 progit 文档阅读理解。
 a) 克隆 gitolite 管理仓库：
 ```
 # git clone ssh://git@host/gitolite-admin.git
-git clone ssh://qxzn-git@10.10.9.19/gitolite-admin.git
+git clone ssh://qxzn-git@10.10.7.83/gitolite-admin.git
 ```
 
 b) 添加用户公钥
@@ -85,7 +85,7 @@ b) 添加用户公钥
 cd gitolite-admin
 cp ~/.ssh/kent_rsa.pub keydir/kent_rsa.pub
 ```
-c) 添加管理员用户 ##### 这一步先不需要 ######
+c) 添加管理员用户 
 vi conf/gitolite.conf
 ```
 @admin = qxzn
@@ -107,7 +107,7 @@ Gitweb（提供像Github一样的Web服务，通过浏览器查看版本库记�
 http://blog.chinaunix.net/uid-26185912-id-3351963.html
 
 ## REPO 镜像安装
-### 获取 Repo 仓库中的代码（在 git 服务器上的操作）
+### 1. 获取 RK SDK（在本地主机上的操作）
 获取原始 repo 工具：
 ```
 su - git
@@ -174,7 +174,7 @@ sed -i ‘s/^repo//’ projects.txt （repo 指的是前面创建文件夹的名
 sed -i ‘s/^/@rk\ = \ repo\//’ projects.txt
 ```
 
-### 创建 project tree（在客户端的操作）
+### 2. 创建 project tree（在客户端的操作）
 增加权限，并且创建repo/platform/manifest.git仓库。
 
 将上面步骤的projects.txt 内容拷贝到客户端，添加到gitolite-admin/conf/gitolite.conf 中：
@@ -195,9 +195,11 @@ repo @rk
 	RW+ = qxzn_rsa
 ```
 完成后 commit 并且 push 生效
-PS：此步骤中的  @rk = repo/platform/manifest   此设置上传后，会在相应的服务端上创建出一个空的manifest.git仓库，作为下一步的基础；之前实验时曾经跳过，出现不少麻烦；
 
-
+PS：此步骤中的  @rk = repo/platform/manifest   此设置上传后，会在相应的服务端上创建出一个空的manifest.git仓库，作为下一步的基础；
+我们在 /home/qxzn-git/ 下可以看到 repositories/repo 目录中即生成了 conf/gitolite.conf  中指定的目录结构，
+该 repo 目录即为我们后面实现 manifest.xml 的 remote fetch 的路径
+ 
 ### MANIFEST 创建（还是在客户端操作）
 基于上一步服务器会生成一个空的manifest.git
 去另外一个路径(/home/qxzn/codes/），我们下载 manifest 仓库
@@ -219,7 +221,15 @@ scp qxzn-git@host:/home/qxzn-git/rk3399/.repo/manifest.xml ./rk3399_android-7.1.
 在复制完成后，打开改名后的 xml 文件，进行修改（非常关键）
 规则语法参考（务必先了解规则）：repo的manifest.xml文件全解 https://blog.csdn.net/nwpushuai/article/details/79252297
 
-1. 修改开头
+1. 删除 revision 、upstream 
+```
+sed -i 's;revision=.*>;/>;g' rk3399_android-7.1.xml
+```
+2. 删除 remote
+```
+sed -i 's;remote=.*>;>;g' rk3399_android-7.1.xml
+```
+3. 修改 remote fetch
 刚获取到的 rk3399 manifest.xml 应该是这样的
 ```
   <remote fetch="." name="aosp"/>
@@ -228,18 +238,10 @@ scp qxzn-git@host:/home/qxzn-git/rk3399/.repo/manifest.xml ./rk3399_android-7.1.
 ```
 修改为 
 ```
-<remote fetch="./" name="origin"/>
-<default remote="origin" revision="refs/heads/master" sync-j="4"/>
+<remote fetch="ssh://qxzn-git@10.10.7.83/repo" name="origin"/>
+<default remote="origin" revision="master" sync-j="4"/>
 ```
 
-2. 删除 revision 、upstream 
-```
-sed -i 's;revision=.*>;/>;g' rk3399_android-7.1.xml
-```
-3. 删除 remote
-```
-sed -i 's;remote=.*>;/>;g' rk3399_android-7.1.xml
-```
 4. 提交
 
 RK 官方文档中的案例：
@@ -267,7 +269,7 @@ git clone ssh://git@host/repo/rk/tools/repo （使用搭建的服务器里的rep
 建的服务器域名或ip）
 mkdir test_repo; cd test_repo
 ```
-.repo/repo/repo init --repo-url=ssh://git@10.10.9.19/repo/rk/tools/repo -u ssh://git@10.10.9.19/repo/platform/manifest -b default -m default.xml
+.repo/repo/repo init --repo-url=ssh://git@10.10.7.83/repo/rk/tools/repo -u ssh://git@10.10.7.83/repo/platform/manifest -b default -m default.xml
 ```
 ../repo/repo init --repo-url=ssh://git@host/repo/rk/tools/repo -u ssh://git@host/repo/platform/
 manifest -b android-4.4 -m rk3188_android-4.4.xml
