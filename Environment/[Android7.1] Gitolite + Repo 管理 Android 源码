@@ -24,8 +24,14 @@ PS：连续三次回车,即在本地生成了公钥和私钥,不设置密码,生
 ### 服务器安装 gitolite（服务端操作）：
 a) 创建 git 账户：
 ```
-sudo adduser --system --shell /bin/bash --group git
-sudo passwd git
+sudo adduser --system --shell /bin/bash --group qxzn-git
+Adding system user `qxzn-git' (UID 112) ...
+Adding new group `qxzn-git' (GID 121) ...
+Adding new user `qxzn-git' (UID 112) with group `qxzn-git' ...
+Creating home directory `/home/qxzn-git' ...
+
+sudo passwd qxzn-git
+
 ```
 b) 下载源码
 ```
@@ -33,11 +39,13 @@ git clone https://github.com/sitaramc/gitolite.git
 ```
 c) 以 “git” 账户登录Linux 系统/ 或者直接：
 ```
-su - git
+su - qxzn-git
 ```
 d) 确保“~/.ssh/authorized_keys”为空或者不存在。
-e) 拷贝服务器管理员 kent 的公钥到 “$HOME/kent_rsa.pub”。
+e) 拷贝服务器管理员 qxzn 的公钥到 “$HOME/qxzn_rsa.pub”。
 ```
+cp /home/qxzn/.ssh/qxzn_rsa.pub $HOME/
+chmod 600 qxzn_rsa.pub
 ```
 f) 执行：
 ```
@@ -49,32 +57,28 @@ gitolite/install -to $HOME/bin
 ```
 h) 执行：
 ```
-$HOME/bin/gitolite setup -pk kent_rsa.pub #管理员的公钥
+$HOME/bin/gitolite setup -pk qxzn_rsa.pub #管理员的公钥
 ```
 
 ### 给 GIT 用户添加下载权限（服务端操作）
-a）如果没有就在$HOME 帐号下建一个.ssh 隐藏目录，并且把管理员帐号下面的 id_rsa（这个是 RK 下载密钥） 复制到刚建立的.ssh 下
-b）更改 RK 密钥的组权限
+a）如果没有就在$HOME 帐号下建一个.ssh 隐藏目录，并且把管理员帐号下面的 id_rsa（这个是管理员的密钥） 复制到刚建立的.ssh 下
+b）更改密钥的组权限
 ```
-sudo chown git:git id_rsa*
+sudo chown git:git ~/.ssh/qxzn_rsa*
 ```
 我这里因为已经去 /etc/sudoer 给了 git sudoer 权限，所以可以直接操作。你可能需要先切换到 root 用户下才能操作。
 c）改权限（注意私钥必须是600，权限太高的话不行）
 ```
-sudo chmod 600 .ssh/id_rsa*
+sudo chmod 600 ~/.ssh/qxzn_rsa*
 ```
 
-### 使用 gitolite-admin 来管理服务器权限（在客户端操作）
+### 使用 gitolite-admin 来管理服务器权限（在客户端操作）                                                                                                                                       
 Git 工具相关概念资料，请搜索 progit 文档阅读理解。
 a) 克隆 gitolite 管理仓库：
 ```
 # git clone ssh://git@host/gitolite-admin.git
-git clone ssh://git@10.10.9.19/gitolite-admin.git
+git clone ssh://qxzn-git@10.10.9.19/gitolite-admin.git
 ```
-说明:/git@host
-host 表示服务器的IP 地址或域名
-例如，服务器的 IP 是192.168.1.200
-那git 管理仓库是git clone ssh://git@192.168.1.200/gitolite-admin.git
 
 b) 添加用户公钥
 ```
@@ -84,7 +88,7 @@ cp ~/.ssh/kent_rsa.pub keydir/kent_rsa.pub
 c) 添加管理员用户 ##### 这一步先不需要 ######
 vi conf/gitolite.conf
 ```
-@admin = admin1 admin2 admin3
+@admin = qxzn
 repo gitolite-admin
 		RW+ = @admin
 ```
@@ -93,7 +97,7 @@ d) 提交生效
 每次修改conf/gitolite.conf 内容都要提交才会生效
 ```
 git add conf/gitolite.conf
-git commit “add usergroup”
+git commit "add usergroup"
 git push origin master
 ```
 还需要以下两项功能的请移步：
@@ -102,8 +106,8 @@ Gitweb（提供像Github一样的Web服务，通过浏览器查看版本库记�
 
 http://blog.chinaunix.net/uid-26185912-id-3351963.html
 
-三、REPO 镜像安装
-1、git 服务器上的操作
+## REPO 镜像安装
+### 获取 Repo 仓库中的代码（在 git 服务器上的操作）
 获取原始 repo 工具：
 ```
 su - git
@@ -162,80 +166,105 @@ Copyright 2002-2004 Gentoo Foundation; Distributed under the GPL
 1.2 如果你已经下载了 RK 的 SDK，我们知道其解压后是一个 .repo 的仓库，我假设你已经通过 repo sync 同步到了最新的 SDK。
 所以我们需要修改 manifest.xml 将其仓库路径修改为公司服务器。
 
-PS：以下这部分操作操作用于批量获得代码仓库的位置，然后配置GITOLITE的权限
+
+获取到 SDK 后，我们获取 projects 列表，用于后面编写 gitolite.conf
+```
 .repo/repo/repo list -n > projects.txt
 sed -i ‘s/^repo//’ projects.txt （repo 指的是前面创建文件夹的名字，list 会把那个加上）
 sed -i ‘s/^/@rk\ = \ repo\//’ projects.txt
+```
 
-2、客户端操作
-2.1 增加权限，并且创建repo/platform/manifest.git仓库
+### 创建 project tree（在客户端的操作）
+增加权限，并且创建repo/platform/manifest.git仓库。
 
 将上面步骤的projects.txt 内容拷贝到客户端，添加到gitolite-admin/conf/gitolite.conf 中：
+```
 cd path_to_gitolite-admin （指的是gitolite-admin 的路径）
 echo "" >> conf/gitolite.conf (添加个空行)
 cat projects.txt >> conf/gitolite.conf
-
+```
 添加组权限，在文件最后（所有“@rk = repo/…”后面）添加如下内容：
+```
 vi conf/gitolite.conf
 @usergroup = user1 user2 user3
 @rk = repo/platform/manifest
 
 repo @rk
-R = @usergroup
-RW+ = @admin
-
-完成后 commit 并且 push 生效；
-再在服务器上执行 $HOME/bin/gitolite setup -pk YourName.pub 使其生效
-
+    R = @usergroup
+    RW+ = @admin
+	RW+ = qxzn_rsa
+```
+完成后 commit 并且 push 生效
 PS：此步骤中的  @rk = repo/platform/manifest   此设置上传后，会在相应的服务端上创建出一个空的manifest.git仓库，作为下一步的基础；之前实验时曾经跳过，出现不少麻烦；
 
 
+### MANIFEST 创建（还是在客户端操作）
+基于上一步服务器会生成一个空的manifest.git
+去另外一个路径(/home/qxzn/codes/），我们下载 manifest 仓库
+```
+# git clone ssh://git@host/repo/platform/manifest.git
+git clone ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git
+# 如果出现没有权限之类的错误，请确认 gitolite-admin/conf/gitolite.conf 中 R、RW+ 等权限设置是否正确
+```
 
-3、MANIFEST 创建（还是在客户端操作）
-
-基于上一步服务器会生成一个空的manifest.git；随便一个目录，下载manifest.git仓库
-
-git clone ssh://git@host/repo/platform/manifest.git
-PS：host改为对应的服务器ip
-即 git clone ssh://git@10.10.9.19/repo/platform/manifest.git
-
-进入manifest工程，从server中拷贝一份manifest.xml 并上传
-
+进入manifest工程，从server中之前获取的 RK 源码中拷贝一份manifest.xml 并上传
+```
 cd manifest
-cp original.xml rk3188_android-4.4.xml(可以是其他名字)
-备注：original.xml 指的是同步下来的xml， /home/git/repositories/repo/.repo/manifests 目
-录下面的xml。
-复制完成后，打开改名后的 xml 文件，看一下最上面几行：如果发现下面的红色部分路
-径是../..的话，请修改为 .. 退出并保存。如果不修改将会导致客户端无法同步代码。fetch 指向的
-相对地址是init 时使用-u 后的参数指定的manifest 仓库地址的相对路径。
-举个例子说明下为什么这么改：假如使用的manifest 工程路径是/home/git/repositories/repo/platform
-/manifest.git，其他工程的路径，如/home/git/repositories/repo/rk/device/rockchip/rksdk.git，这个工程
-是rk 仓库，路径是device/rockchip/rksdk，rk 仓库的路径就是manifest 的上级的上级的rk 目录。
+scp qxzn-git@host:/home/qxzn-git/rk3399/.repo/manifest.xml ./rk3399_android-7.1.xml
+```
+第一个参数的 manifest.xml 指的是从 RK 服务器同步下来的 xml （实际上是指向 manifests/rk3399_nougat_release.xml）
+第二个参数拷贝到本的绝对地路径为 /home/qxzn/codes/manifest/rk3399_android-7.1.xml，
+这个对应着在 qxzn-git 服务器上的 manifest 仓库中 /home/qxzn-git/repositories/repo/.repo/manifests 目录下面的 xml。
+
+在复制完成后，打开改名后的 xml 文件，进行修改（非常关键）
+规则语法参考：repo的manifest.xml文件全解 https://blog.csdn.net/nwpushuai/article/details/79252297
+1. 删除 revision 、upstream 
+```
+sed -i 's;revision=.*>;/>;g' rk3399_android-7.1.xml
+```
+2. 删除 remote
+```
+sed -i 's;remote=.*>;>;g' rk3399_android-7.1.xml
+```
+3. 
+看一下最上面几行：如果发现下面的红色部分路径是../..的话，
+请修改为 .. 退出并保存。
+如果不修改将会导致客户端无法同步代码。
+fetch 指向的相对地址是init 时使用-u 后的参数指定的manifest 仓库地址的相对路径。
+（比如我这里是 ssh://git@www.rockchip.com.cn/repo/rk/platform/manifest  ）
+举个例子说明下为什么这么改：
+假如使用的manifest 工程路径是/home/git/repositories/repo/platform/manifest.git，
+其他工程的路径，如/home/git/repositories/repo/rk/device/rockchip/rksdk.git，
+这个工程是 rk 仓库，路径是device/rockchip/rksdk，rk 仓库的路径就是manifest 的上级的上级的rk 目录。
+```
 <manifest>
-<remote name="aosp"
-fetch="../.."
-sync-c="true" />
-<remote name="rk"
-fetch="../.."
-sync-c="true" />
-<default revision="refs/tags/android-4.4.2_r1"
-remote="aosp"
-sync-j="4"
-sync-c="true" />
+<remote name="aosp" fetch="../.." sync-c="true" />
+<remote name="rk" fetch="../.." sync-c="true" />
+<default revision="refs/tags/android-4.4.2_r1" remote="aosp" sync-j="4" sync-c="true" />
+```
 
-
+RK 案例：
+```
 git add rk3188_android-4.4.xml
-git commit -m “add initial manifest for android-4.4”
+git commit -m "add initial manifest for android-4.4"
 git push origin master:android-4.4(分支名，可以是其他名字)
-
+```
+在我这里：
+```
+git add default.xml
+git commit -m "add initial manifest for Android7.1"
+git push origin master:default
+```
 
 
 3、镜像测试
-
 在客户端，先下载 repo 工具，如前所述，按照如下命令测试：
 git clone ssh://git@host/repo/rk/tools/repo （使用搭建的服务器里的repo 工具，host 是搭
 建的服务器域名或ip）
 mkdir test_repo; cd test_repo
+```
+.repo/repo/repo init --repo-url=ssh://git@10.10.9.19/repo/rk/tools/repo -u ssh://git@10.10.9.19/repo/platform/manifest -b default -m default.xml
+```
 ../repo/repo init --repo-url=ssh://git@host/repo/rk/tools/repo -u ssh://git@host/repo/platform/
 manifest -b android-4.4 -m rk3188_android-4.4.xml
 备注：
