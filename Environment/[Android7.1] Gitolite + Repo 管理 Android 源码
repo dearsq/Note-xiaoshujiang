@@ -113,8 +113,8 @@ http://blog.chinaunix.net/uid-26185912-id-3351963.html
 获取到 SDK 后，我们获取 projects 列表，用于后面编写 gitolite.conf
 ```
 .repo/repo/repo list -n > projects.txt
-sed -i ‘s/^repo//’ projects.txt （repo 指的是前面创建文件夹的名字，list 会把那个加上）
-sed -i ‘s/^/@rk\ = \ repo\//’ projects.txt
+sed -i 's/^repo//' projects.txt （repo 指的是前面创建文件夹的名字，list 会把那个加上）
+sed -i 's/^/@rk\ = \ repo\//' projects.txt
 ```
 
 ### 2. 创建 project tree（在客户端的操作）
@@ -228,15 +228,41 @@ chmod +x Android7.1_RK3399_getnames_and_init_push_git_proj.py
 
 ## Repo 下载测试
 ```
-repo init -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master -m rk3399_android-7.1.xml
+../repo init -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master
 ```
+
+```
+repo init --repo-url=https://mirrors.tuna.tsinghua.edu.cn/git/git-repo -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master -m rk3399_android-7.1.xml
+```
+
 如果没有 -m 指定 xml， 会使用名为 default 的 xml
 ```
-repo sync -l
 repo sync
 ```
 
-如果你没有 repo 的话：
+如果没有 repo 的话, 参考 https://mirrors.tuna.tsinghua.edu.cn/help/git-repo/
 ```
-git clone https://github.com/dearsq/repo.git
+curl https://mirrors.tuna.tsinghua.edu.cn/git/git-repo -o repo
+chmod +x repo
+export REPO_URL='https://mirrors.tuna.tsinghua.edu.cn/git/git-repo/'
 ```
+
+## 错误集锦
+### 权限问题
+如果碰到类似如下错误：
+```
+FATAL: R any repo/device/moto/shamu-kernel qxzn_rsa DENIED by fallthru
+(or you mis-spelled the reponame)
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+error: Cannot fetch device/htc/flounder-kernel from ssh://qxzn-git@10.10.7.83/repo/device/htc/flounder-kernel
+error: Cannot fetch device/asus/fugu-kernel from ssh://qxzn-git@10.10.7.83/repo/device/asus/fugu-kernel
+error: Cannot fetch device/moto/shamu-kernel from ssh://qxzn-git@10.10.7.83/repo/device/moto/shamu-kernel
+```
+请确保 gitolite/conf/gitolite-admin.conf 中有正确的权限
+
+error: Cannot fetch device/htc/flounder-kernel from ssh://qxzn-git@10.10.7.83/repo/device/htc/flounder-kernel                    [132/1875]
+error: Cannot fetch device/asus/fugu-kernel from ssh://qxzn-git@10.10.7.83/repo/device/asus/fugu-kernel
+error: Cannot fetch device/moto/shamu-kernel from ssh://qxzn-git@10.10.7.83/repo/device/moto/shamu-kernel
