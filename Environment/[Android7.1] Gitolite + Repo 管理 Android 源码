@@ -5,10 +5,6 @@ tags: Android,Git,Repo,Gitolite
 ---
 [TOC]
 
-基于 RK 官方文档 https://wenku.baidu.com/view/99fb9e2ea98271fe900ef93d.html
-和 lzpdz 小伙伴的笔记 https://blog.csdn.net/lzpdz/article/details/51672161
-进行梳理，更正了两者中过期以及错误的地方
-
 ## 准备工作
 1、安装基础的程序
 ```
@@ -266,3 +262,9 @@ error: Cannot fetch device/moto/shamu-kernel from ssh://qxzn-git@10.10.7.83/repo
 error: Cannot fetch device/htc/flounder-kernel from ssh://qxzn-git@10.10.7.83/repo/device/htc/flounder-kernel                    [132/1875]
 error: Cannot fetch device/asus/fugu-kernel from ssh://qxzn-git@10.10.7.83/repo/device/asus/fugu-kernel
 error: Cannot fetch device/moto/shamu-kernel from ssh://qxzn-git@10.10.7.83/repo/device/moto/shamu-kernel
+
+## 参考文档
+基于 RK 官方文档 https://wenku.baidu.com/view/99fb9e2ea98271fe900ef93d.html
+和 lzpdz 小伙伴的笔记 https://blog.csdn.net/lzpdz/article/details/51672161
+进行梳理，更正了两者中过期以及错误的地方
+补充相见恨晚的一篇文章 http://nicekwell.net/blog/20171112/ba-yi-you-de-repogong-cheng-ti-jiao-dao-fu-wu-qi.html#repo-1
