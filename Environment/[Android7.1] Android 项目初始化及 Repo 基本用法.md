@@ -19,10 +19,19 @@ export REPO_URL='https://mirrors.tuna.tsinghua.edu.cn/git/git-repo/'
 
 ## 初始化 Android 工程
 ```
-repo init --repo-url=https://mirrors.tuna.tsinghua.edu.cn/git/git-repo -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master -m rk3399_android-7.1.xml
-```
-如果没有 -m 指定 xml， 会使用名为 default 的 xml，
-```
+# 添加密钥
+ssh-agent bash
+ssh-add ~/.ssh/qxzn_rsa 
+
+# 配置 git 信息
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+  
+# 初始化
+# 如果没有 -m 指定 xml， 会使用名为 default 的 xml，
+./repo init --repo-url=https://mirrors.tuna.tsinghua.edu.cn/git/git-repo -u ssh://qxzn-git@10.10.7.83/repo/platform/manifest.git -b master -m rk3399_android-7.1.xml
+
+# 同步代码
 repo sync
 ```
 
@@ -32,6 +41,8 @@ repo sync
 ```
 # 务必创建分支开发
 repo start 
+# 约定：repo start dev-[username]
+# 比如：repo start dev-younix
 
 # 在子仓库中进行开发，提交变更
 git add 
@@ -45,10 +56,25 @@ git push origin master:msater
 ## repo 基本用法
 ### 同步更新代码
 ```
+cd rk3399_sdk/
 repo sync 
 repo sync [project]  # repo sync kernel 
 ```
 本质是 `git fetch --update-head-ok` 作用是更新当前分支，并将你的本地修改 rebase 到最近一次更新。
+```
+➜  rk3399 .repo/repo/repo branch
+   (no branches)
+   
+# 会显示 no branches 需要使用 如下命令进行初始化
+
+➜  rk3399 .repo/repo/repo start master --all**strong text**
+Starting master: 100% (552/552), done.  
+➜  rk3399 .repo/repo/repo branch            
+*  master                    | in all projects
+```
+
+
+
 注意：如果当前分支有本地提交或者与服务器有冲突，或者不是用 repo start 建立
 
 ### 解决冲突
