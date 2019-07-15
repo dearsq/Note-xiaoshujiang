@@ -164,7 +164,7 @@ sed -i 's;revision=.*>;/>;g' rk3399_android-7.1.xml
 ```
 2. 删除 remote
 ```
-sed -i 's;remote=.*>;>;g' rk3399_android-7.1.xml
+sed -i 's;remote=.*>;/>;g' rk3399_android-7.1.xml
 ```
 3. 修改 remote fetch
 刚获取到的 rk3399 manifest.xml 应该是这样的
