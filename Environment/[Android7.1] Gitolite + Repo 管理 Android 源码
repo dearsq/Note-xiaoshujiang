@@ -14,7 +14,7 @@ sudo apt-get install ssh git
 ```
 ssh-keygen -t rsa
 ```
-PS：连续三次回车,即在本地生成了公钥和私钥,不设置密码,生成的公钥私钥在~/.ssh目录下，kent_rsa 是私钥， kent_rsa.pub是公钥 
+PS：连续三次回车,即在本地生成了公钥和私钥,不设置密码,生成的公钥私钥在~/.ssh目录下，rsa 是私钥， rsa.pub 是公钥 
 
 ## GIT服务器建立（基于GITOLITE）
 ### 服务器安装 gitolite（服务端操作）：
@@ -96,10 +96,9 @@ git add conf/gitolite.conf
 git commit "add usergroup"
 git push origin master
 ```
-还需要以下两项功能的请移步：
+还需要以下两项功能的可以参考下面这个博客：
 Gitdaemon（守护进程，开放一个公共的 git clone 服务，可选）
 Gitweb（提供像Github一样的Web服务，通过浏览器查看版本库记录，可选）
-
 http://blog.chinaunix.net/uid-26185912-id-3351963.html
 
 ## REPO 镜像安装
@@ -133,7 +132,6 @@ repo @rk
     RW+ = @admin
 	RW+ = qxzn_rsa
 ```
-完成后 commit 并且 push 生效
 
 PS：push 后，我们在 /home/qxzn-git/ 下可以看到 repositories/repo 目录中即生成了 conf/gitolite.conf  中指定的目录结构。
 比如  @rk = repo/platform/manifest   此设置上传后，会在相应的服务端上创建出一个空的manifest.git仓库，作为下一步的基础。
@@ -200,14 +198,15 @@ rm .repo -rf
 du -sh .
 24G # RK3399 的代码大概在 24G 左右
 ```
-接下来根据之前我们修改的  rk3399_android-7.1.xml 里面描述的目录结构生成新的 .git 仓库并提交到远程仓库
+接下来根据之前我们修改的  rk3399_android-7.1.xml 里面描述的目录结构生成新的 .git 仓库树并提交到远程仓库：
 使用以下 python3 的脚本实现
 https://github.com/dearsq/Note-xiaoshujiang/blob/master/Environment/Android7.1_RK3399_getnames_and_init_push_git_proj.py
 ```
 # 进入 24G 源码目录
 cd rk3399 
-# 拷贝脚本 和 manifest.xml 文件（rk3399_android-7.1.xml）到当前目录
-# 略
+# 拷贝py脚本 和 manifest.xml 文件（rk3399_android-7.1.xml）到当前目录
+cp [Android7.1_RK3399_getnames_and_init_push_git_proj.py] ./
+cp [rk3399_android-7.1.xml] ./
 
 # 修改脚本中 remote 部分的地址
 # 脚本中 remote = 'ssh://qxzn-git@10.10.7.83/repo' 根据自己实际情况进行修改
@@ -220,7 +219,7 @@ chmod +x Android7.1_RK3399_getnames_and_init_push_git_proj.py
 注意！使用脚本前请保证
 1. python3 工具已经安装正确
 2. git config --global user.name 等都正确配置
-3. id_rsa 等密钥正常添加，ssh-add ～/.ssh/qxzn_rsa
+3. id_rsa 等密钥正常添加，`ssh-agent bash`，`ssh-add ～/.ssh/qxzn_rsa`
 
 ## Repo 下载测试
 ```
