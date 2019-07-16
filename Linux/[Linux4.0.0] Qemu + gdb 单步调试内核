@@ -1,0 +1,81 @@
+title: [Linux4.0.0] Qemu + gdb 单步调试内核
+date: 2019-7-16 21:00:00
+tags: Linux,qemu,gdb
+
+---
+
+[TOC]
+
+## 安装工具
+```
+sudo apt-get install qemu libncurses5-dev gcc-arm-linux-gnueabi build-essential gdb-arm-none-eabi gcc-aarch64-linux-gnu eclipse-cdt git
+```
+
+## 安装源码
+略
+example.下面这个 Linux4.0 的 Kernel 是张飞天前辈修改过的，主要是将 GCC 编译选项的 O2 改为了 O0 ，去掉了编译器优化。
+```
+git clone https://github.com/figozhang/runninglinuxkernel_4.0.git
+```
+详细的编译器优化的介绍可以参见这篇文章：
+```
+https://blog.csdn.net/qq_31108501/article/details/51842166
+```
+
+## 设置环境变量
+```
+export ARCH=arm
+export CROSS_COMPILE=arm-none-eabi-
+make vexpress_defconfig
+
+cd _install_arm32/dev/
+sudo mknod console c 5 1 #创建console设备节点
+make menuconfig
+
+make bzImage -j4 #完成后会生成 arch/arm/boot/zImage
+make dtbs
+```
+## 启动 qemu
+```
+qemu-system-arm -nographic -M vexpress-a9 -m 1024M -kernel arch/arm/boot/zImage -append "rdinit=/linuxrc console=ttyAMA0 loglevel=8" -dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb
+```
+`-nographic` 没有 qemu 图形界面
+`-M` 指定机器版本
+`-m` 内存大小
+`-kernel` 镜像文件路径
+`-append` 传给虚拟机内核的参数
+`-dtb` 指定 dtbs 文件
+
+跑起来后即进入了板子，类似于串口进入板子
+
+## 启动 qemu 的 debug 功能
+开启两个终端：
+### 终端 A qemu模拟板子
+```
+qemu-system-arm -nographic -M vexpress-a9 -m 1024M -kernel arch/arm/boot/zImage -append "rdinit=/linuxrc console=ttyAMA0 loglevel=8" -dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -S -s
+```
+`-S -s` 
+### 终端 B gdb 调试
+另外开启一个终端打开 gdb
+```
+arm-none-eabi-gdb --tui vmlinux
+```
+`-tui` 指定gdb默认的UI
+`vmlinux` 指定镜像
+
+```
+(gdb) target remote localhost:1234
+Remtote debugging using localhost:1234
+0x60000000 in ?? ()
+
+######### b 打断点 #########
+(gdb) b do_fork
+Breakpoint 1 at 0xc0043cbc: file kernel/fork.c, line 1638.
+######### c 运行 #########
+(gdb) c
+Continuing.
+######### s 单步调试 #########
+(gdb) s
+在 console 中会打印当前参数的值
+```
+qemu 和 gdb 是通过 tcp/ip 进行通信
