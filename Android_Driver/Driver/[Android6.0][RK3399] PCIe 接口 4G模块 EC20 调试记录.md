@@ -229,6 +229,27 @@ vi device/rockchip/rk3399/rk3399_mid/system.prop
 说明可能是 SIM 卡卡座有问题。
 检查 SIM 卡卡座与 SIM 卡，发现 SIM 卡插反了。
 
+#### 7. AT 指令
+```
+# 重启模块
+echo -e "AT+CFUN=1,1\r\n" >/dev/ttyUSB2
+```
+```
+# 关闭 SIM 热插拔
+AT+QSIMDET=0 
+# 打开 SIM 热插拔，前提是 USIM_PRESENCE 有接入 EC20
+AT+QSIMDET=1,1  //1和0表示 高有效 or 低有效
+AT+QSIMDET=1,0
+```
+插拔后会有相应提示：
+```
++CPIN:NOT READY
+AT+QSIMSTAT=1,1或AT+QSIMSTAT=1,0
+Call Ready
+```
+AT 指令参考 https://www.cnblogs.com/jieruishu/p/10952854.html
+
+
 
   [1]: https://en.wikipedia.org/wiki/Qualcomm_Gobi
   [2]: http://wx1.sinaimg.cn/large/ba061518ly1fh13zv9nprj20mt0j4gnu.jpg
