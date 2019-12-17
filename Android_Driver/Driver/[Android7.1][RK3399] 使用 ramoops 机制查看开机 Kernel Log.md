@@ -1,7 +1,6 @@
 ---
 title: [Android7.1][RK3399] 使用 ramoops 机制查看开机 Kernel Log
 tags: android
-grammar_cjkRuby: true
 ---
 
 Platform: RK3399 
