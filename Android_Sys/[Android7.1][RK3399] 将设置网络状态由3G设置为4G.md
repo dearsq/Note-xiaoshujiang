@@ -1,11 +1,15 @@
 ---
-title: [Android7.1][RK3399] 将设置网络状态由3G设置为4G
+title: [Android7.1][RK3399] 将设置首选网络类型由3G设置为LTE
 tags: android,LTE,网络状态
 ---
 
 Platform: RK3399
 OS: Android 7.1
 Kernel: v4.4.126
+
+## 需求
+将设置首选网络类型由3G设置为LTE
+![首选网络类型](./images/首选网络类型.png)
 
 ## 设置步骤
 
