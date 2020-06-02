@@ -64,4 +64,4 @@ cp lib/.libs/libafpclient.so.0 /lib/x86_64-linux-gnu/
 
 
 另一篇：
-Linux下访问NAS服务器
+《Linux下访问NAS服务器》也在我的博客中，大家请自行查找
