@@ -1,6 +1,5 @@
 ---
-title: [Ubuntu] Linux 下访问 NAS 服务器
-tags: 
+title: [Ubuntu] Linux下访问NAS服务器.md
 grammar_cjkRuby: true
 ---
 
