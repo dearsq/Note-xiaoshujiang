@@ -1,7 +1,7 @@
 ---
 title:  [Android9.0][Android10.0] 版本差异
 date: 2020-7-14 21:00:00
-tags: Android
+tags: Android9,Android10
 
 ---
 
@@ -13,7 +13,31 @@ tags: Android
 https://developer.android.com/about/versions/pie/android-9.0-changes-all
 ### 隐私权变更
 限制后台应用访问设备传感器、限制通过 Wi-Fi 扫描检索到的信息，以及与通话、手机状态和 Wi-Fi 扫描相关的新权限规则和权限组。
-
+### 对使用非 SDK 接口的限制
+### 安全行为变更
+#### 传输层安全协议 (TLS) 实现变更
+#### 更严格的 SECCOMP 过滤器
+#### 加密变更
+#### 不再支持 Android 安全加密文件(ASEC)
+### ICU 库更新
+### Android Test 变更
+Android 9 引入了多项针对 Android Test 框架库和类结构的更改。 这些变更可帮助开发者使用支持框架的公共 API，此外，在使用第三方库或自定义逻辑构建和运行测试时，这些变更还可提供更大的灵活性。
+#### 从框架移除的内容库
+#### 测试套件版本号变更
+### Java UTF 解码器
+### 使用证书的主机名验证
+### 网络地址查询可能会导致网络违规
+### 套接字标记
+### 报告的套接字中可用字节数
+### 更详尽的 VPN 网络功能报告
+### 应用不再能访问 xt_qtaguid 文件夹中的文件
+### 现在强制执行 FLAG_ACTIVITY_NEW_TASK 要求
+在 Android 9 中，您不能从非 Activity 环境中启动 Activity，除非您传递 Intent 标志 FLAG_ACTIVITY_NEW_TASK。 如果您尝试在不传递此标志的情况下启动 Activity，则该 Activity 不会启动，系统会在日志中输出一则消息。
+### 屏幕旋转变更
+### Apache HTTP 客户端弃用影响采用非标准 ClassLoader 的应用
+### 枚举相机
+应用可以通过调用 getCameraIdList() 发现每个可用的摄像头。 应用不应假定设备只有一个后置摄像头或只有一个前置摄像头。
+例如，如果您的应用有一个用来切换前置和后置摄像头的按钮，则设备可能有多个前置或后置摄像头可供选择。 您应浏览一下摄像头列表，检查每个摄像头的特征，然后决定向用户显示哪些摄像头。
 
 ## Android10.0
 变更详情见 
