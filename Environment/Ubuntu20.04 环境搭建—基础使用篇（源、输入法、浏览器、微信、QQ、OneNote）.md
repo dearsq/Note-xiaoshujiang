@@ -3,12 +3,16 @@ date: 2020-7-16 21:00:00
 tags: Ubuntu
 
 ---
+
 如果内容对你有帮助，欢迎评论让我知道 ：）
+
 Ubuntu20.04 的环境搭建分为三部分
 1. 基础使用篇（源、输入法、浏览器、微信、QQ、OneNote）
 2. Android 开发环境篇（AndroidStudio，AOSP 编译环境）
 3. ROS 开发环境篇（TX2、CUDA）
 
+这篇文章是针对于之前有过 Linux 使用基础的同学，所以大部分会是资料的链接。简单的步骤都会省略，有问题放在评论区，其他的小伙伴知道的会热情的解答的～
+本文会随着使用过程一直更新，欢迎关注收藏。
 
 [TOC]
 
@@ -66,9 +70,9 @@ PS: 这里有巨坑，折腾了一个小时，最后发现是 clash-linux-amd64-
 ![enter description here](./images/1594990526560.png)
 ![enter description here](./images/1594990552384.png)
 
-### 基本工具 curl 和 git
+### 基本工具 curl 、git、tree
 ```
-sudo apt install curl git
+sudo apt install curl git tree
 ```
 curl 下载工具
 git 版本管理工具
@@ -127,7 +131,14 @@ npm install p3x-onenote
 如果你安装过程中可能出现了 RequestError: connect ETIMEDOUT 52.216.80.144:443
 之类的问题，请把梯子的规则设置为全局。
 
+### 安装网易云音乐 @2020.07.17
+网易云官方下载https://music.163.com/#/download
+是针对 ubuntu18.04的，但是20.04也可以用
+```
+sudo dpkg -i netease-cloud-music_1.2.1_amd64_ubuntu_20190428.deb
+```
 
+### 安装
 ---
 
 基础使用环境搭建完了，如果对你有帮助，请点赞评论，ThankU～
