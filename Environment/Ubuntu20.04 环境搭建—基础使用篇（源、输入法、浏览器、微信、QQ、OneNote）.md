@@ -124,3 +124,10 @@ Github 地址：https://github.com/patrikx3/onenote/releases/
 sudo apt install npm
 npm install p3x-onenote
 ```
+如果你安装过程中可能出现了 RequestError: connect ETIMEDOUT 52.216.80.144:443
+之类的问题，请把梯子的规则设置为全局。
+
+
+---
+
+基础使用环境搭建完了，如果对你有帮助，请点赞评论，ThankU～
