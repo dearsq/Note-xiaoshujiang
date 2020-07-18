@@ -131,6 +131,12 @@ npm install p3x-onenote
 如果你安装过程中可能出现了 RequestError: connect ETIMEDOUT 52.216.80.144:443
 之类的问题，请把梯子的规则设置为全局。
 
+另一个方法：
+```
+$ sudo snap install p3x-onenote
+Download snap "p3x-onenote" (77) from channel "stable" 
+```
+
 ### 安装网易云音乐 @2020.07.17
 网易云官方下载https://music.163.com/#/download
 是针对 ubuntu18.04的，但是20.04也可以用
@@ -138,7 +144,6 @@ npm install p3x-onenote
 sudo dpkg -i netease-cloud-music_1.2.1_amd64_ubuntu_20190428.deb
 ```
 
-### 安装
 ---
 
 基础使用环境搭建完了，如果对你有帮助，请点赞评论，ThankU～
