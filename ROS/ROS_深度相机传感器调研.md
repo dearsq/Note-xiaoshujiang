@@ -36,6 +36,8 @@ tags: Robot,机器人,
  ```
  
  ### ToF
+更详细的资料参考：https://blog.csdn.net/dianmao0917/article/details/17389637
+计算机视觉life：https://blog.csdn.net/electech6/article/details/78349107
 
  ToF 全称 Time-of-Flight ，分为 
  i-ToF(indirect Time-of-Flight) 相位测距
@@ -45,6 +47,9 @@ tags: Robot,机器人,
 ToF 技术测量相机是指主动投射出的光束经过目标表面反射后被相机接收这个过程的来回的飞行时间，基于光速即可获得目标到相机的距离。
 ToF 传感器给到光源驱动芯片调制信号，调制信号控制激光器发出高频脉冲调制(CW正弦 / PL脉冲)的近红外光，遇到物体漫反射后，接收端通过发射光与接收光的相位差或时间差来计算深度信息。
 ![enter description here](./images/1595493968644.png)
+
+根据调制的方法不同，一般可以分为两种：脉冲调制（Pulsed Modulation）和连续波调制（Continuous Wave Modulation）。更深入的参考 计算机视觉life：https://blog.csdn.net/electech6/article/details/78349107 的资料。
+
 其中 i-ToF 是根据 CIS（Camera Image Sensor）获取到的模拟信号进行测距。
 其中 d-ToF 是根据 SPAD Array（单光子雪崩二极管阵列）获取的数字信号进行测距。
 
@@ -143,15 +148,26 @@ RGB双目 可达2k分辨率
 2. 深度突变处的数据缺失
 通过基于 ARM 的软核算法即可解决。
  
- 
+
  ### 市场主流方案
- 
+ Microsoft、Intel、Leap Motion、Orbbec、图漾、Occipital Structure、Stereolabs 、DUO。
+####  Intel Realsense R200
+类型：双目IR
+![enter description here](./images/1595496134501.png)
+红外投射器投射出红外散斑，左右两个红外相机采集两张红外图像，处理器根据两张红外图像中的散斑特征点匹配计算视差图，最终得到深度图。
+
+距离：室内0.5m-3.5m，室外最远10m。
+应用场景：室内。室外受环境光照影响较大（红外发射器功率有限）
+
+SDK兼容性很强，支持 C++, C#, JavaScript, Processing, Unity, 和Cinder等框架。需要说明的是， R200的SDK只支持人脸跟踪、不支持手势跟踪和骨架跟踪。
+
 #### Intel Realsense SR300 
-类型：结构光（编码光）
+类型：双目结构光（官方叫编码光）
 ![enter description here](./images/1595494407932.png)
 ![enter description here](./images/1595494411074.png)
 
 距离：0.2-1.5米
+应用场景：脸部、手部跟踪。笔记本电脑、Pad、虚拟现实设备。
 
 介绍：
 https://www.intelrealsense.com/coded-light/
@@ -159,7 +175,7 @@ https://www.intelrealsense.com/coded-light/
 采购：
 https://store.intelrealsense.com/buy-intel-realsense-depth-module-sr300.html
 
-### Intel Realsense D435
+#### Intel Realsense D435
 类型：结构光（主动立体IR）
 ![enter description here](./images/1595494484438.png)
 
@@ -168,7 +184,7 @@ https://store.intelrealsense.com/buy-intel-realsense-depth-module-sr300.html
 https://www.intelrealsense.com/zh-hans/depth-camera-d435/
 
 
-### 乐动 TOF IDC3224R_LD01
+#### 乐动 TOF IDC3224R_LD01
 3D TOF 高分辨率深度摄像头
 
 ![enter description here](./images/1595494531739.png)
@@ -180,14 +196,69 @@ FOV：92°X 74°X 57°
 应用场景：机器人精准定位与建图、导航与避障、人脸/肢体/物体识别、AR/VR等。
 介绍：https://www.ldrobot.com/product/43
 
+#### Microsoft Kinect V1 V2
+V1 是基于结构光
+V2 是基于 TOF
+![enter description here](./images/1595497718370.png)
+![enter description here](./images/1595495913545.png)
 
-### 乐视LeTMC-520 （奥比中光）
+V1 已经停产
+V2 支持 六个人的骨架追踪、基本的手势操作和脸部跟踪，支持 Cinder 和 Open Frameworks，并且具有内置的Unity 3D插件
+
+#### 乐视LeTMC-520 （实际是奥比中光做的）
 三目相机
 IR投影 
-
 
 ![enter description here](./images/1595494702321.png)
 
 ![enter description here](./images/1595494721728.png)
 
 ![enter description here](./images/1595494751591.png)
+
+#### Orbbec Astra
+奥比中光有：Orbbec Astra、Orbbec Astra Mini、Orbbec Persee
+比如第一代 Orbbec Astra 和 Pro
+类型：IR结构光
+深度图都是 VGA（640×480）分辨率 @30FPS。不同之处在于彩色相机的分辨率， Astra提供的是 VGA@30FPS，而 Astra Pro 是 720p@ 30 FPS
+
+![enter description here](./images/1595496578560.png)
+
+SDK比较简单，支持基本的手势跟踪，可以用于手势识别的人机交互，但是不支持骨架提取。最远测量范围可达8m。因此，Orbecc Astra比较适合室内较远距离的应用场景。不过，该设备只支持基于C++的 OpenNI 框架。
+官网：https://orbbec3d.com/
+
+#### Orbbec Astra  Mobile 3D camera
+为了满足小型手持终端的3D视觉要求，Orbbec成功开发了Astra Mobile 3D摄像机，以满足移动/平板电脑制造商的多种应用场景。
+![enter description here](./images/1595557143890.png)
+找不到方案的具体购买链接
+
+https://orbbec3d.com/mobile/
+
+
+#### 图漾 RGBD 系列 FS830-HD
+类型：主动红外双目深度相机（带RGB）
+https://item.taobao.com/item.htm?spm=a1z10.1-c-s.w4004-18920235119.6.5f2214a9IyeoVQ&id=591956273890
+USB2.0消费等级相机,HD深度分辨率,720P RGB分辨率,RGB对齐,适合机器人避障,刷脸,活体检测等应用.
+
+RGB-D对齐：是
+功耗：IDLE 1.5／WORK 3.5／TRIGGER 3.0
+输出接口：USB
+工作范围：240~3500mm
+深度分辨率：1280x960
+深度帧率：15
+RGB分辨率：2592x1944
+基线距离：25
+数据单位mm：1.0
+同步采集：是
+具有RGB：是
+
+支持Windows、Linux、Android、ROS 平台。且多设备同时工作无干扰。适合对帧率要求不高的远距离应用场景。（已确认，本款不支持 Android）	
+简介：https://www.percipio.xyz/dev_detail/?model_id=288
+官网：https://www.percipio.xyz/
+采购链接：https://shop564213940.taobao.com/
+
+#### Occipital Structure
+https://structure.io/
+
+#### 更多
+https://zhuanlan.zhihu.com/p/32375622
+Microsoft、Intel、Leap Motion、Orbbec、图漾、Occipital Structure、Stereolabs 、DUO
