@@ -237,6 +237,7 @@ https://orbbec3d.com/mobile/
 类型：主动红外双目深度相机（带RGB）
 https://item.taobao.com/item.htm?spm=a1z10.1-c-s.w4004-18920235119.6.5f2214a9IyeoVQ&id=591956273890
 USB2.0消费等级相机,HD深度分辨率,720P RGB分辨率,RGB对齐,适合机器人避障,刷脸,活体检测等应用.
+还有一款 FS830-Mobile 应用是消费类
 
 RGB-D对齐：是
 功耗：IDLE 1.5／WORK 3.5／TRIGGER 3.0
@@ -250,7 +251,7 @@ RGB分辨率：2592x1944
 同步采集：是
 具有RGB：是
 
-支持Windows、Linux、Android、ROS 平台。且多设备同时工作无干扰。适合对帧率要求不高的远距离应用场景。（已确认，本款不支持 Android）	
+支持Windows、Linux、Android、ROS 平台。且多设备同时工作无干扰。适合对帧率要求不高的远距离应用场景。
 简介：https://www.percipio.xyz/dev_detail/?model_id=288
 官网：https://www.percipio.xyz/
 采购链接：https://shop564213940.taobao.com/
