@@ -15,7 +15,6 @@ tags: Robot,机器人,
 	* d-ToF
 * 双目
 	* RGB 双目
-	* IR 双目
 * 结构光
 	* 单目IR+投影IR点阵
 	* 双目IR+投影IR点阵
@@ -197,7 +196,7 @@ FOV：92°X 74°X 57°
 介绍：https://www.ldrobot.com/product/43
 
 #### Microsoft Kinect V1 V2
-V1 是基于结构光
+V1 是基于结构光(官方称为编码光）
 V2 是基于 TOF
 ![enter description here](./images/1595497718370.png)
 ![enter description here](./images/1595495913545.png)
