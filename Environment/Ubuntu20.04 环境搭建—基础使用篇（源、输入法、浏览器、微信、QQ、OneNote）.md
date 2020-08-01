@@ -52,17 +52,34 @@ https://blog.csdn.net/weixin_43235209/article/details/104617827
 ```
 sudo /etc/init.d/network-manager restart
 ```
-### 安装 Clash 梯子你懂的
+### 安装某工具科学爬坡 你懂的
+这里一直审核不通过，所以去掉了，只留下Github的网址，大家自己看吧
 看 CPU 架构
 ```
 $ dpkg --print-architecture
 amd64
 ```
-到 github 下载对应的 release 版本：https://github.com/Dreamacro/clash/releases
-所以我这里应该下载 clash-linux-amd64-v1.0.0.gz
-其他的按照网上到处都可以搜到的教程进行操作就行了。比如 https://blog.csdn.net/qq_27036771/article/details/106748409
-PS: 这里有巨坑，折腾了一个小时，最后发现是 clash-linux-amd64-v1.0.0. 导致的。
-使用老版本 ./clash-linux-amd64-2020.05.08 就可以使用了。
+到 github 下载对应的 release 版本：https://github.com/Dreamacro/
+
+### 设置开机自动启动
+网上添加脚本的步骤都过于复杂，而且不好管控。
+直接使用现成的工具即可。
+我最喜欢的是 cinnamon 桌面系统下的附带的工具。
+```
+sudo apt install cinnamon
+```
+安装完毕后
+```
+cinnamon-settings startup
+```
+![系统设置](https://img-blog.csdnimg.cn/20200801152029805.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RlYXJzcQ==,size_16,color_FFFFFF,t_70)
+![设置开机启动程序](https://img-blog.csdnimg.cn/20200801152101109.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RlYXJzcQ==,size_16,color_FFFFFF,t_70)
+
+
+### 登录 Google 账户
+浏览器登录 Google 账户，开启同步功能，舒服了，现在，一半的开发环境已经搭建好了。哈哈。
+分享一下我主要在用的插件。
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200718003240984.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2RlYXJzcQ==,size_16,color_FFFFFF,t_70)
 
 ### 登录 Google 账户
 浏览器登录 Google 账户，开启同步功能，舒服了，现在，一半的开发环境已经搭建好了。哈哈。
