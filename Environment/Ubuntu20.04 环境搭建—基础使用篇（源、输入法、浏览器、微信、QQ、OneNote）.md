@@ -161,6 +161,13 @@ Download snap "p3x-onenote" (77) from channel "stable"
 sudo dpkg -i netease-cloud-music_1.2.1_amd64_ubuntu_20190428.deb
 ```
 
+### 福昕pdf阅读器
+官网下载地址：https://www.foxitsoftware.cn/
+
+### 安装 WPS
+官网安装包：https://www.wps.cn/
+解决WPS无法输入中文问题：https://blog.csdn.net/qq_27009517/article/details/104278460
+
 ---
 
 基础使用环境搭建完了，如果对你有帮助，请点赞评论，ThankU～
