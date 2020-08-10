@@ -37,3 +37,28 @@ tar zxvf android-studio-ide-193.6626763-linux.tar.gz
 
 
 ## Android SDK（AOSP）开发环境搭建
+### 安装 openJDK 和工具
+```
+## Java JDK
+sudo apt-get install openjdk-8-jdk
+## 编译工具
+sudo apt-get install m4
+sudo apt-get install  g++-multilib gcc-multilib lib32ncurses5-dev lib32readline6-dev lib32z1-dev
+sudo apt-get install flex
+sudo apt-get install curl
+sudo apt-get install bison
+```
+
+### 编译 Android 7.1
+
+```
+[  0% 21/50505] Lex: aidl <= system/tools/aidl/aidl_language_l.ll
+FAILED: /bin/bash -c "prebuilts/misc/linux-x86/flex/flex-2.5.39 -oout/host/linux-x86/obj/STATIC_LIBRARIES/libaidl-common_intermediates/aidl_language_l.cpp system/tools/aidl/aidl_language_l.ll"
+flex-2.5.39: loadlocale.c:130:_nl_intern_locale_data: ?? 'cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))' ???
+Aborted (core dumped)
+```
+参考：https://stackoverflow.com/questions/49301627/android-7-1-2-armv7
+解决方案：
+```
+export LC_ALL=C
+```
