@@ -49,8 +49,8 @@ sudo apt-get install curl
 sudo apt-get install bison
 ```
 
-### 编译 Android 7.1
-
+### 编译 Android 7.1 SDK
+#### LC_ALL = C
 ```
 [  0% 21/50505] Lex: aidl <= system/tools/aidl/aidl_language_l.ll
 FAILED: /bin/bash -c "prebuilts/misc/linux-x86/flex/flex-2.5.39 -oout/host/linux-x86/obj/STATIC_LIBRARIES/libaidl-common_intermediates/aidl_language_l.cpp system/tools/aidl/aidl_language_l.ll"
@@ -61,4 +61,13 @@ Aborted (core dumped)
 解决方案：
 ```
 export LC_ALL=C
+```
+
+#### xmllint: command not found
+```
+/bin/bash: xmllint: command not found
+```
+解决方案：
+```
+sudo apt-get  install libxml2-utils
 ```
