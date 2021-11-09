@@ -78,3 +78,7 @@ jekyll new restlessManBlog   #新建博客
 cd restlessManBlog           #切换目录 
 jekyll server                #启动项目
 ```
+
+
+### 2. 搭建静态博客到 github 或者 gitee 上
+参考： https://zhuanlan.zhihu.com/p/87225594
